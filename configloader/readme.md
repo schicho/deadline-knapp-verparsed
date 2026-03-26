@@ -1,0 +1,9 @@
+# configloader development notes
+
+Wir wrappen einfach mal alles unnötig oft.
+
+- `printer.c`: wrapped ganz normal die fprint funktionen aus stdio.h
+- `logger.c`: logging funktionalität die gleich unsere print funktionen verwendet
+- `filesystem.c`: high-level funktionen um Datein zu öffnen. Darf gerne noch erweitert werden. Benutzt intern `fs_low`.
+- `fs_low.c`: öffnet die Datein eigentlich mittels `fsops.h`. macht random sanity checks.
+- `fsops.h`: wrapped die fopen, etc. Funktionen.

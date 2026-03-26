@@ -5,7 +5,7 @@
 
 #define INVALID_MODE 1
 
-#include "fs_open.h"
+#include "fsops.h"
 
 static int path_sanity_check(const char* path) {
     /* todo: change this up */
@@ -35,7 +35,7 @@ static int mode_sanity_check(const char* mode) {
 }
 
 static FILE* open_file(const char* path, const char* mode) {
-    return FILE_OPEN(path, mode);
+    return FSOPS_FOPEN(path, mode);
 }
 
 FILE* fs_low_open(const char* path, const char* mode) {
