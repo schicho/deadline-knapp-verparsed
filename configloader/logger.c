@@ -1,7 +1,8 @@
 #include "logger.h"
 
 #include <stdarg.h>
-#include <stdio.h>
+
+#include "printer.h"
 
 static const char* log_level_string(LOG_LEVEL level) {
     char* level_string = NULL;
@@ -16,9 +17,9 @@ static const char* log_level_string(LOG_LEVEL level) {
 
 static void vcfg_log(LOG_LEVEL level, const char* format, va_list args) {
     const char* level_str = log_level_string(level);
-    fprintf(stderr, "[%s] ", level_str);
-    vfprintf(stderr, format, args);
-    fprintf(stderr, "\n");
+    cfg_err_printf("[%s] ", level_str);
+    cfg_err_vprintf(format, args);
+    cfg_err_printf("\n");
 }
 
 void cfg_log(LOG_LEVEL level, const char* format, ...) {
