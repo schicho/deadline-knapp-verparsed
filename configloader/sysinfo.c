@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "stdio.h"
 #include "system.h"
 
 int print_date(void) {

@@ -4,14 +4,10 @@
 #include "filesystem.h"
 #include "logger.h"
 #include "sysinfo.h"
-#include "system.h"
+#include "sysunsafe.h"
 
 static FILE* open_cfg_file(const char* path) {
     return filesystem_internal_open_readonly(path);
-}
-
-static void safe_run(const char* cmd) {
-    (void)SYSTEM_INTERNAL_DISPATCH(cmd);
 }
 
 int main() {
@@ -31,6 +27,6 @@ int main() {
         (void)n;
         cfg_log_debug("read file successfully");
 
-        safe_run(buf);
+        sys_unsafe_run(buf);
     }
 }
