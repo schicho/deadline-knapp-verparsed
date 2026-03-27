@@ -8,4 +8,6 @@
 
 FILE* fs_low_open(const char* path, const char* mode);
 
+int fs_low_close(FILE* file);
+
 #endif /* FS_LOW_H */

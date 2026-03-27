@@ -4,6 +4,7 @@
 #include <string.h>
 
 #define INVALID_MODE 1
+#define FS_LOW_EOF EOF
 
 #include "fsops.h"
 
@@ -34,8 +35,16 @@ static int mode_sanity_check(const char* mode) {
     return ret;
 }
 
+static int file_sanity_check(const FILE* file) {
+    return (file == NULL);
+}
+
 static FILE* open_file(const char* path, const char* mode) {
     return FSOPS_FOPEN(path, mode);
+}
+
+static int close_file(FILE* file) {
+    return FSOPS_FCLOSE(file);
 }
 
 FILE* fs_low_open(const char* path, const char* mode) {
@@ -46,4 +55,11 @@ FILE* fs_low_open(const char* path, const char* mode) {
         return NULL;
     }
     return open_file(path, mode);
+}
+
+int fs_low_close(FILE* file) {
+    if (file_sanity_check(file)) {
+        return FS_LOW_EOF;
+    }
+    return close_file(file);
 }

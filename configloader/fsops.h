@@ -3,10 +3,17 @@
 
 #include <stdio.h>
 
-#define FSOPS_FOPEN(x, y) ({\
+#define FSOPS_FOPEN(p, m) ({\
     FILE* r = NULL; \
     do { \
-        r = fopen(x,y); \
+        r = fopen(p,m); \
+    } while(0); \
+    r; })
+
+#define FSOPS_FCLOSE(f) ({\
+    int r = -1; \
+    do { \
+        r = fclose(f); \
     } while(0); \
     r; })
 

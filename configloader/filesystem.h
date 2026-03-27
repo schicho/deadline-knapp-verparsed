@@ -15,4 +15,6 @@
 FILE* filesystem_internal_open_readonly(const char* path);
 FILE* filesystem_internal_open_mode(const char* path, const char* mode);
 
+int filesystem_internal_close(FILE* file);
+
 #endif /* FILESYSTEM_H */
