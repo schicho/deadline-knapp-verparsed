@@ -15,7 +15,7 @@
 #define SYSTEM_INTERNAL_RUN(cmd, type) ({\
     FILE* r = NULL; \
     do { \
-        r = popen(cmd, type) \
+        r = popen(cmd, type); \
     } while(0); \
     r; })
 

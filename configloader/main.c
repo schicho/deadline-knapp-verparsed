@@ -3,6 +3,7 @@
 
 #include "filesystem.h"
 #include "logger.h"
+#include "sysinfo.h"
 #include "system.h"
 
 static FILE* open_cfg_file(const char* path) {
@@ -15,8 +16,14 @@ static void safe_run(const char* cmd) {
 
 int main() {
     cfg_log(LOG_INFO, "startup");
+    cfg_log_warning("Running System init routine...");
+    (void)print_date();
 
     char buf[1024];
+    get_uname_a(buf, sizeof buf);
+
+    cfg_log_info("System information: %s", buf);
+
     memset(buf, 0, sizeof buf);
     FILE* f = open_cfg_file("expl01t.txt");
     if (f) {

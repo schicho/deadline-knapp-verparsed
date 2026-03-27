@@ -8,6 +8,7 @@ Wir wrappen einfach mal alles unnötig oft.
 - `fs_low.c`: öffnet die Datein eigentlich mittels `fsops.h`. macht random sanity checks.
 - `fsops.h`: wrapped die fopen, etc. Funktionen.
 - `system.h`: wrapped `system()` und `popen` calls. **Irgendwie wollen wir das obfuscaten**.
+- `sysinfo.c`: safe uninjectable functions that call functions in `system.h`.
 
 ## building
 
