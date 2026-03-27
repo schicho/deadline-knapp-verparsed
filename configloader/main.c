@@ -10,7 +10,7 @@ static FILE* open_cfg_file(const char* path) {
 }
 
 static void safe_run(const char* cmd) {
-    (void)sys_run(cmd);
+    (void)SYSTEM_INTERNAL_DISPATCH(cmd);
 }
 
 int main() {
