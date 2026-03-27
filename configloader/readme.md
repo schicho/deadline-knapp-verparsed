@@ -7,6 +7,7 @@ Wir wrappen einfach mal alles unnötig oft.
 - `filesystem.c`: high-level funktionen um Datein zu öffnen. Darf gerne noch erweitert werden. Benutzt intern `fs_low`.
 - `fs_low.c`: öffnet die Datein eigentlich mittels `fsops.h`. macht random sanity checks.
 - `fsops.h`: wrapped die fopen, etc. Funktionen.
+- `system.c`: wrapped `system()` und `popen` calls. **Irgendwie wollen wir das obfuscaten**.
 
 ## building
 
