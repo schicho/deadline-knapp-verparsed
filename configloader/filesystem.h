@@ -1,12 +1,12 @@
 #ifndef FILESYSTEM_H
 #define FILESYSTEM_H
 
-#define READONLY "r"
-#define READWRITE "r+"
+#define READONLY       "r"
+#define READWRITE      "r+"
 #define WRITEONLYTRUNC "w"
 #define READWRITETRUNC "w+"
-#define APPENDONLY "a"
-#define APPENDWRITE "a+"
+#define APPENDONLY     "a"
+#define APPENDWRITE    "a+"
 
 #include <stdio.h>
 

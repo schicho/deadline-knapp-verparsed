@@ -3,10 +3,10 @@
 
 typedef int LOG_LEVEL;
 
-#define LOG_INFO 0
-#define LOG_DEBUG 1
+#define LOG_INFO    0
+#define LOG_DEBUG   1
 #define LOG_WARNING 2
-#define LOG_ERROR 3
+#define LOG_ERROR   3
 
 void cfg_log(LOG_LEVEL level, const char* format, ...);
 void cfg_log_info(const char* format, ...);

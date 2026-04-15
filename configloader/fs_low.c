@@ -4,7 +4,7 @@
 #include <string.h>
 
 #define INVALID_MODE 1
-#define FS_LOW_EOF EOF
+#define FS_LOW_EOF   EOF
 
 #include "fsops.h"
 
