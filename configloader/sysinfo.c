@@ -24,5 +24,5 @@ int get_uname_a(char* buf, size_t len) {
     } else {
         buf[len - 1] = 0;
     }
-    return SYSTEM_INTERNAL_RUN_STOP(p);
+    return SYSTEM_INTERNAL_RUN_CLOSE(p);
 }

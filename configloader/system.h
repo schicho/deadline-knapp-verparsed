@@ -1,6 +1,5 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
-#define _POSIX_C_SOURCE 200809L /* for popen and pclose */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,12 +18,11 @@
     } while(0); \
     r; })
 
-#define SYSTEM_INTERNAL_RUN_STOP(stream) ({\
+#define SYSTEM_INTERNAL_RUN_CLOSE(stream) ({\
     int r = -1; \
     do { \
         r = pclose(stream); \
     } while(0); \
     r; })
 
-#undef _POSIX_C_SOURCE
 #endif /* SYSTEM_H */

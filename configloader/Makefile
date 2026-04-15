@@ -13,7 +13,7 @@ TARGET ?= configloader
 
 # Keep user-provided flags extensible via ?= and +=
 CPPFLAGS ?=
-CFLAGS ?= -std=c11 -O2 -Wall -Wextra
+CFLAGS ?= -std=c11 -O2 -Wall -Wextra -D_POSIX_C_SOURCE=200809L
 LDFLAGS ?=
 LDLIBS ?=
 
