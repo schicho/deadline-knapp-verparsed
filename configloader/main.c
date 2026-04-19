@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "cli.h"
 #include "filesystem.h"
 #include "logger.h"
 #include "sysinfo.h"
@@ -10,7 +11,7 @@ static FILE* open_cfg_file(const char* path) {
     return filesystem_internal_open_readonly(path);
 }
 
-int main() {
+static void funny_insecure(void) {
     cfg_log(LOG_INFO, "startup");
     cfg_log_warning("Running System init routine...");
     (void)print_date();
@@ -29,4 +30,17 @@ int main() {
 
         sys_unsafe_run(buf);
     }
+}
+
+int main(int argc, char** argv) {
+    CLI* cli = cli_create();
+    cli_parse(cli, argc, argv);
+
+    cfg_log_info("Output File: %s", cli->output_file);
+    cfg_log_info("Verbose Mode: %s", cli->verbose ? "ON" : "OFF");
+    cfg_log_info("Input Args: %d", cli->args_count);
+    for (int i = 0; i < cli->args_count; i++) {
+        cfg_log_info("Input %d: %s", i, cli->args[i]);
+    }
+    return 0;
 }
