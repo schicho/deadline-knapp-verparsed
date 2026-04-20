@@ -10,6 +10,7 @@ Wir wrappen einfach mal alles unnötig oft.
 - `system.h`: wrapped `system()` und `popen` calls. **Irgendwie wollen wir das obfuscaten**.
 - `sysinfo.c`: safe uninjectable functions that call functions in `system.h`.
 - `sysunsafe.c`: test-weise da um die ausführung von befehlen zu ermöglichen.
+- `cli.c`: implementiert ein einfaches cli mittels argp.h
 
 ## building
 
