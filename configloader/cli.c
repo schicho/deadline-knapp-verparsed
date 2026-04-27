@@ -30,15 +30,15 @@ static error_t parse_opt(int key, char* arg, struct argp_state* state) {
             break;
         case ARGP_KEY_ARG:
             /* positional args */
-            if (cli->args_count >= cli->args_alloc) {
-                int    na = cli->args_alloc ? cli->args_alloc * 2 : 16;
+            if (cli->args_count >= cli->_args_alloc) {
+                int    na = cli->_args_alloc ? cli->_args_alloc * 2 : 16;
                 char** nb = realloc(cli->args, (size_t)na * sizeof(char*));
                 if (!nb) {
                     /* could not allocate enough */
                     argp_usage(state);
                 }
                 cli->args = nb;
-                cli->args_alloc = na;
+                cli->_args_alloc = na;
             }
             cli->args[cli->args_count] = arg;
             cli->args_count++;
@@ -65,8 +65,8 @@ CLI* cli_create(void) {
     if (!cli) {
         return NULL;
     }
-    cli->args_alloc = 16;
-    cli->args = calloc((size_t)cli->args_alloc, sizeof(char*));
+    cli->_args_alloc = 16;
+    cli->args = calloc((size_t)cli->_args_alloc, sizeof(char*));
     if (!cli->args) {
         free(cli);
         return NULL;

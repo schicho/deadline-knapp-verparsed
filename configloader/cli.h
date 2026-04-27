@@ -6,7 +6,7 @@
 typedef struct CLI {
     char** args;        /* positional input file args */
     int    args_count;  /* number of input files */
-    int    args_alloc;  /* internal allocation size*/
+    int    _args_alloc;  /* internal allocation size*/
     bool   verbose;     /* -v / --verbose */
     char*  output_file; /* -o / --output */
 } CLI;
