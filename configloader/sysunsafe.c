@@ -4,9 +4,13 @@
 
 #include "system.h"
 
+const char* const SAFE_COMMANDS[] = {
+    "hostname", "uname -a", "date", "whoami", "true", "false", "pwd",
+};
+
 const char* DISALLOW_META_CHARS = ";|&><$`\\\"'";
 
-static int is_command_valid(char* cmd) {
+static int is_command_valid(const char* cmd) {
     // strpbrk returns pointer to first match or NULL on no match
     return strpbrk(cmd, DISALLOW_META_CHARS) ? 0 : 1;
 }
