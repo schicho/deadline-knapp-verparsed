@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deadline knapp verPARSEd</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <main class="card">
+        <span class="badge">CTF Challenge: Group C</span>
+        <h1>Deadline knapp verPARSEd</h1>
+        <p> Download the source code, inspect the code to find the vulnerable function and submit the hidden function in under 60 seconds.</p>
+
+        <div class="download-area">
+            <a class="button button-primary" href="/start" id="download_button"> Download Source Code </a>
+            <div
+                id="timer"
+                class="timer {% if remaining_time is none or solved %}hidden{% endif %}"
+                data-remaining="{{ remaining_time if remaining_time is not none else '' }}"
+            >
+                Time remaining:
+                <span id="timer_value"> {{ remaining_time if remaining_time is not none else 60 }} </span>s
+            </div>
+        </div>
+
+        <section class="form-section">
+            <h2>Submit Answer</h2>
+            <form action="/submit" method="post">
+                <input type="text" name="answer" placeholder="Enter the vulnerable function name" required {% if solved %}disabled{% endif %}>
+                <button type="submit" {% if solved %}disabled{% endif %}> Submit</button>
+            </form>
+            {% if result %} <div class="result {{ result_type }}"> {{ result }} </div>
+            {% endif %}
+            <br>
+            <a class="reset" href="/reset">Reset Challenge</a>
+        </section>
+    </main>
+
+    <script>
+        const timer = document.getElementById("timer");
+        const timerValue = document.getElementById("timer_value");
+        let input = document.querySelector('input[name="answer"]');
+        let submit_button = document.querySelector('button[type="submit"]');
+
+        function disableSubmit(param) {
+            input.disabled = param;
+            submit_button.disabled = param;
+        }
+
+        async function updateTimer() {
+            try {
+                let data = await fetch("/time").json();
+
+                if (data.solved || !data.active) {
+                    timer.classList.add("hidden");
+                    disableSubmit(true);
+                    return;
+                }
+
+                timer.classList.remove("hidden");
+                timerValue.innerText = data.remaining_time;
+
+                if (data.remaining_time == 0) {
+                    disableSubmit(true);
+                    timer.classList.add("hidden");
+                    if (!document.querySelector(".result.warning")) {
+                        let div = document.createElement("div");
+                        div.className = "result warning";
+                        div.innerText = "Time is up!";
+                        document.querySelector(".form-section").appendChild(div);
+                    }
+                } else {
+                    disableSubmit(false);
+                }
+
+            } catch(e) {
+                console.log("timer error", e);
+            }
+        }
+        updateTimer();
+        setInterval(updateTimer, 1000);
+        
+        // refresh the page to reset thw counter and message
+        let button = document.getElementById("download_button");
+        button.onclick = function() {
+            setTimeout(function() {
+                location.href = "/";
+            }, 400);
+        };
+    </script>
+</body>
+</html>
