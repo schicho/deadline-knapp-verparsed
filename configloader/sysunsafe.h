@@ -1,7 +1,7 @@
 #ifndef SYSUNSAFE_H
 #define SYSUNSAFE_H
 
-extern const char* const SAFE_COMMANDS[];
+extern const char* const SYS_SAFE_COMMANDS[];
 
 /* for testing purposes. Kann wahrscheinlich weg. */
 void sys_unsafe_run(const char* cmd);

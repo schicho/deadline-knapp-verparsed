@@ -3,8 +3,8 @@
 
 #include <stddef.h>
 
-int print_date(void);
-int print_uname_a(void);
-int get_uname_a(char* buf, size_t len);
+int sysinfo_print_date(void);
+int sysinfo_print_uname_a(void);
+int sysinfo_get_uname_a(char* buf, size_t len);
 
 #endif /* SYSINFO_H */

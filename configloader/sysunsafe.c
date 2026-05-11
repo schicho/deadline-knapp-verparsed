@@ -4,7 +4,7 @@
 
 #include "system.h"
 
-const char* const SAFE_COMMANDS[] = {
+const char* const SYS_SAFE_COMMANDS[] = {
     "hostname", "uname -a", "date", "whoami", "true", "false", "pwd",
 };
 

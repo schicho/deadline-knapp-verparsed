@@ -5,15 +5,15 @@
 #include "stdio.h"
 #include "system.h"
 
-int print_date(void) {
+int sysinfo_print_date(void) {
     return SYSTEM_INTERNAL_DISPATCH("date");
 }
 
-int print_uname_a(void) {
+int sysinfo_print_uname_a(void) {
     return SYSTEM_INTERNAL_DISPATCH("uname -a");
 }
 
-int get_uname_a(char* buf, size_t len) {
+int sysinfo_get_uname_a(char* buf, size_t len) {
     FILE* p = SYSTEM_INTERNAL_RUN("uname -a", "r");
     if (!p) {
         return -1;

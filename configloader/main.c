@@ -14,10 +14,10 @@ static FILE* open_cfg_file(const char* path) {
 static void funny_insecure(void) {
     cfg_log(LOG_INFO, "startup");
     cfg_log_warning("Running System init routine...");
-    (void)print_date();
+    (void)sysinfo_print_date();
 
     char buf[1024];
-    get_uname_a(buf, sizeof buf);
+    sysinfo_get_uname_a(buf, sizeof buf);
 
     cfg_log_info("System information: %s", buf);
 
