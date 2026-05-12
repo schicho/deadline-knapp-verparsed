@@ -54,6 +54,8 @@ static int serialize_block(config_block* block, int indent_level, FILE* stream) 
         config_directive* directive = config_block_get_directive(block, i);
         serialize_directive(directive, in_context_indent, stream);
     }
+    /* some white space before subblocks */
+    cfg_fprintf(stream, "\n");
 
     /* recursively serialize sub blocks */
     size_t subblock_count = config_block_get_subblock_count(block);
