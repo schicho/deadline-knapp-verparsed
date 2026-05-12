@@ -51,6 +51,12 @@ static int serialize_test(void) {
     config_block* location1 = cfgf_easy_add_subblock(server, "location");
     config_block_add_arg(location1, "/one");
 
+    (void)cfgf_easy_add_directive_args(server, "listen", "80",
+                                       "default_server",
+                                       "ssl");
+
+    (void)cfgf_easy_add_directive_args(server, "internal");
+
     config_serialize(main, stdout);
     config_block_free(main);
     return 0;
