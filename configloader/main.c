@@ -3,6 +3,7 @@
 
 #include "cli.h"
 #include "configfile.h"
+#include "configfile_deserialize.h"
 #include "configfile_easy.h"
 #include "configfile_serialize.h"
 #include "filesystem.h"
@@ -51,14 +52,34 @@ static int serialize_test(void) {
     config_block* location1 = cfgf_easy_add_subblock(server, "location");
     config_block_add_arg(location1, "/one");
 
-    (void)cfgf_easy_add_directive_args(server, "listen", "80",
-                                       "default_server",
-                                       "ssl");
+    (void)cfgf_easy_add_directive_args(server, "listen", "80", "default_server", "ssl");
 
     (void)cfgf_easy_add_directive_args(server, "internal");
 
     config_serialize(main, stdout);
     config_block_free(main);
+    return 0;
+}
+
+static int deserialize_test(void) {
+    FILE* cfg1 = open_cfg_file("test/testconfig.cfg");
+    FILE* cfg2 = open_cfg_file("test/testconfig2.cfg");
+
+    config_block* cfg1block = config_deserialize(cfg1);
+    config_block* cfg2block = config_deserialize(cfg2);
+
+    filesystem_internal_close(cfg1);
+    filesystem_internal_close(cfg2);
+
+    cfg_log_info("cfg 1 is:");
+    config_serialize(cfg1block, stdout);
+
+    cfg_log_info("cfg 2 is:");
+    config_serialize(cfg2block, stdout);
+
+    config_block_free(cfg1block);
+    config_block_free(cfg2block);
+
     return 0;
 }
 
@@ -74,5 +95,6 @@ int main(int argc, char** argv) {
     }
 
     (void)serialize_test();
+    (void)deserialize_test();
     return 0;
 }

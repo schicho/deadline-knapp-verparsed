@@ -7,7 +7,7 @@
 
 #define INDENT_BY "    "
 
-static int indent(int indent_level, FILE* stream) {
+static inline int indent(int indent_level, FILE* stream) {
     for (int i = 0; i < indent_level; i++) {
         cfg_fprintf(stream, INDENT_BY);
     }
