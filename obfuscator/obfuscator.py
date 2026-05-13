@@ -29,7 +29,10 @@ def build_variable_dictionary(given_string, variable_dictionary):
     """
     Collect rename candidates from a string and extend the supplied dictionary.
     """
-    special_cases = {"typedef", "unsigned", "const", "struct", "bool", "void", "char", "int", "size_t", "FILE"}
+    special_cases = {
+        "typedef", "unsigned", "const", "struct", "enum", "union",
+        "bool", "void", "char", "int", "size_t", "FILE"
+    }
 
     renamable_lines = []
     in_preprocessor_block = False
@@ -82,6 +85,26 @@ def build_variable_dictionary(given_string, variable_dictionary):
     return variable_dictionary
 
 
+def build_macro_dictionary(given_string, variable_dictionary):
+    """
+    Collect macro names from #define directives and extend the supplied dictionary.
+    Reserved implementation identifiers are skipped.
+    """
+    for line in given_string.splitlines():
+        define_match = re.match(r"^\s*#define\s+([A-Za-z_][A-Za-z0-9_]*)\b", line)
+        if not define_match:
+            continue
+
+        macro_name = define_match.group(1)
+        if macro_name.startswith("__"):
+            continue
+
+        if macro_name not in variable_dictionary:
+            variable_dictionary[macro_name] = random_string(12)
+
+    return variable_dictionary
+
+
 def variable_renamer_with_dictionary(given_string, variable_dictionary):
     """
     Rename variables and functions using a supplied dictionary or build a new one.
@@ -93,48 +116,43 @@ def variable_renamer_with_dictionary(given_string, variable_dictionary):
         variable_dictionary = {}
 
         build_variable_dictionary(given_string, variable_dictionary)
-    index = 0
-    new_string = ""
+    def replace_identifiers_in_fragment(fragment):
+        for entry in variable_dictionary:
+            # Replace identifiers only when they are not part of a larger token.
+            re_string = r"(?<![a-zA-Z0-9_]){}(?![a-zA-Z0-9_])".format(re.escape(entry))
 
-    # For each line, keep preprocessor directives intact and only rename identifiers in code.
-    in_preprocessor_block = False
+            # While loop to go through every entry and replace it
+            # Breaks when it cannot find another instance
+            def replace_identifier(match):
+                prefix = fragment[:match.start()]
+                if prefix.endswith("struct ") or prefix.endswith("enum ") or prefix.endswith("union "):
+                    return match.group(0)
+                return variable_dictionary[entry]
+
+            fragment = re.sub(re_string, replace_identifier, fragment)
+
+        return fragment
+
+    new_string = ""
+    literal_pattern = r"(\"(?:\\.|[^\"\\])*\"|'(?:\\.|[^'\\])*')"
+
+    # Replace identifiers line by line while preserving text inside string literals.
     for line in given_string.splitlines(keepends=True):
-        if in_preprocessor_block or line.lstrip().startswith("#"):
-            in_preprocessor_block = line.rstrip().endswith("\\")
+        # Includes are handled separately (quoted includes via rewrite_local_includes)
+        # and system includes (<...>) must never be identifier-renamed.
+        if line.lstrip().startswith("#include"):
             new_string += line
             continue
 
-        split_code = re.split('"', line)
-        index = 0
+        split_literals = re.split(literal_pattern, line)
+        rebuilt_line = ""
+        for part_index, part in enumerate(split_literals):
+            if part_index % 2 == 0:
+                rebuilt_line += replace_identifiers_in_fragment(part)
+            else:
+                rebuilt_line += part
 
-        # For each even section in split code (odd indicates that it is in a string)
-        # replace all of the variable and function names with what is defined in the dictionary
-        for section in split_code:
-
-                if(index%2==0):
-                    for entry in variable_dictionary:
-
-                        # Replace identifiers only when they are not part of a larger token.
-                        re_string = r"(?<![a-zA-Z0-9_]){}(?![a-zA-Z0-9_])".format(re.escape(entry))
-
-                        # While loop to go through every entry and replace it
-                        # Breaks when it cannot find another instance
-                        def replace_identifier(match):
-                            prefix = section[:match.start()]
-                            if prefix.endswith("struct ") or prefix.endswith("enum ") or prefix.endswith("union "):
-                                return match.group(0)
-                            return variable_dictionary[entry]
-
-                        section = re.sub(re_string, replace_identifier, section)
-
-                # Add the current section back to make the original string but with obfuscated names
-                # Accounts for adding a quote everytime except for the first scenario
-                if(index >= 1):
-                    new_string = new_string + "\"" + section
-                else:
-                    new_string = new_string + section
-
-                index+=1
+        new_string += rebuilt_line
     
     # Return the obfuscated code
     return new_string
@@ -307,6 +325,7 @@ def main():
     shared_dictionary = {}
     for file_string in file_contents.values():
         build_variable_dictionary(file_string, shared_dictionary)
+        build_macro_dictionary(file_string, shared_dictionary)
 
     for filename in os.listdir(input_dir):
         print("\n {} : \r".format(filename))
