@@ -1,0 +1,8 @@
+.venv
+venv
+__pycache__/
+*.pyc
+configloader/build/
+webservice/tmp/
+obfuscator/out/
+.git/
