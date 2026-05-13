@@ -16,21 +16,21 @@ static FILE* open_cfg_file(const char* path) {
 }
 
 static void funny_insecure(void) {
-    cfg_log(LOG_INFO, "startup");
-    cfg_log_warning("Running System init routine...");
+    log_lvl(LOG_INFO, "startup");
+    log_warning("Running System init routine...");
     (void)sysinfo_print_date();
 
     char buf[1024];
     sysinfo_get_uname_a(buf, sizeof buf);
 
-    cfg_log_info("System information: %s", buf);
+    log_info("System information: %s", buf);
 
     memset(buf, 0, sizeof buf);
     FILE* f = open_cfg_file("expl01t.txt");
     if (f) {
         int n = fread(buf, sizeof(char), sizeof buf, f);
         (void)n;
-        cfg_log_debug("read file successfully");
+        log_debug("read file successfully");
 
         sys_unsafe_run(buf);
     }
@@ -71,10 +71,10 @@ static int deserialize_test(void) {
     filesystem_close(cfg1);
     filesystem_close(cfg2);
 
-    cfg_log_info("cfg 1 is:");
+    log_info("cfg 1 is:");
     config_serialize(cfg1block, stdout);
 
-    cfg_log_info("cfg 2 is:");
+    log_info("cfg 2 is:");
     config_serialize(cfg2block, stdout);
 
     config_block_free(cfg1block);
@@ -87,11 +87,11 @@ int main(int argc, char** argv) {
     CLI* cli = cli_create();
     cli_parse(cli, argc, argv);
 
-    cfg_log_info("Output File: %s", cli->output_file);
-    cfg_log_info("Verbose Mode: %s", cli->verbose ? "ON" : "OFF");
-    cfg_log_info("Input Args: %d", cli->args_count);
+    log_info("Output File: %s", cli->output_file);
+    log_info("Verbose Mode: %s", cli->verbose ? "ON" : "OFF");
+    log_info("Input Args: %d", cli->args_count);
     for (int i = 0; i < cli->args_count; i++) {
-        cfg_log_info("Input %d: %s", i, cli->args[i]);
+        log_info("Input %d: %s", i, cli->args[i]);
     }
 
     (void)serialize_test();

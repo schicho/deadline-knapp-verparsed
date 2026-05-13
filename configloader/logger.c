@@ -15,44 +15,44 @@ static const char* log_level_string(LOG_LEVEL level) {
     return level_string;
 }
 
-static void vcfg_log(LOG_LEVEL level, const char* format, va_list args) {
+static void vlog(LOG_LEVEL level, const char* format, va_list args) {
     const char* level_str = log_level_string(level);
     cfg_err_printf("[%s] ", level_str);
     cfg_err_vprintf(format, args);
     cfg_err_printf("\n");
 }
 
-void cfg_log(LOG_LEVEL level, const char* format, ...) {
+void log_lvl(LOG_LEVEL level, const char* format, ...) {
     va_list args;
     va_start(args, format);
-    vcfg_log(level, format, args);
+    vlog(level, format, args);
     va_end(args);
 }
 
-void cfg_log_info(const char* format, ...) {
+void log_info(const char* format, ...) {
     va_list args;
     va_start(args, format);
-    vcfg_log(LOG_INFO, format, args);
+    vlog(LOG_INFO, format, args);
     va_end(args);
 }
 
-void cfg_log_debug(const char* format, ...) {
+void log_debug(const char* format, ...) {
     va_list args;
     va_start(args, format);
-    vcfg_log(LOG_DEBUG, format, args);
+    vlog(LOG_DEBUG, format, args);
     va_end(args);
 }
 
-void cfg_log_warning(const char* format, ...) {
+void log_warning(const char* format, ...) {
     va_list args;
     va_start(args, format);
-    vcfg_log(LOG_WARNING, format, args);
+    vlog(LOG_WARNING, format, args);
     va_end(args);
 }
 
-void cfg_log_error(const char* format, ...) {
+void log_error(const char* format, ...) {
     va_list args;
     va_start(args, format);
-    vcfg_log(LOG_ERROR, format, args);
+    vlog(LOG_ERROR, format, args);
     va_end(args);
 }
