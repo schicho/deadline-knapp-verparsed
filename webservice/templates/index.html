@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Deadline knapp verPARSEd</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
+
 <body>
     <main class="card">
         <span class="badge">CTF Challenge: Group C</span>
         <h1>Deadline knapp verPARSEd</h1>
-        <p> Download the source code, inspect the code to find the vulnerable function and submit the hidden function in under 60 seconds.</p>
+        <p> Download the source code, inspect the code to find the vulnerable function and submit the hidden function in
+            under 60 seconds.</p>
 
         <div class="download-area">
             <a class="button button-primary" href="/start" id="download_button"> Download Source Code </a>
-            <div
-                id="timer"
-                class="timer {% if remaining_time is none or solved %}hidden{% endif %}"
-                data-remaining="{{ remaining_time if remaining_time is not none else '' }}"
-            >
+            {% if remaining_time is not none and remaining_time > 0 and not solved %}
+            <div id="timer" class="timer" data-remaining="{{ remaining_time }}">
                 Time remaining:
-                <span id="timer_value"> {{ remaining_time if remaining_time is not none else 60 }} </span>s
+                <span id="timer_value"> {{ remaining_time }} </span>s
             </div>
+            {% endif %}
         </div>
 
         <section class="form-section">
             <h2>Submit Answer</h2>
             <form action="/submit" method="post">
-                <input type="text" name="answer" placeholder="Enter the vulnerable function name" required {% if solved %}disabled{% endif %}>
+                <input type="text" name="answer" placeholder="Enter the vulnerable function name" required {% if solved
+                    %}disabled{% endif %}>
                 <button type="submit" {% if solved %}disabled{% endif %}> Submit</button>
             </form>
             {% if result %} <div class="result {{ result_type }}"> {{ result }} </div>
@@ -38,56 +40,90 @@
     </main>
 
     <script>
-        const timer = document.getElementById("timer");
-        const timerValue = document.getElementById("timer_value");
+        let timer = document.getElementById("timer");
+        let timerValue = document.getElementById("timer_value");
+        const downloadButton = document.getElementById("download_button");
         let input = document.querySelector('input[name="answer"]');
         let submit_button = document.querySelector('button[type="submit"]');
+        let remainingSeconds = timer ? Number(timer.dataset.remaining || 0) : 0;
+        let countdownHandle = null;
+
+        function ensureTimerElement() {
+            if (timer && timerValue) {
+                return;
+            }
+
+            const downloadArea = document.querySelector(".download-area");
+            timer = document.createElement("div");
+            timer.id = "timer";
+            timer.className = "timer";
+            timer.dataset.remaining = "";
+            timer.innerHTML = 'Time remaining: <span id="timer_value">60</span>s';
+            downloadArea.appendChild(timer);
+            timerValue = document.getElementById("timer_value");
+        }
 
         function disableSubmit(param) {
             input.disabled = param;
             submit_button.disabled = param;
         }
 
-        async function updateTimer() {
-            try {
-                let data = await fetch("/time").json();
+        function showTimer(seconds) {
+            ensureTimerElement();
+            remainingSeconds = seconds;
+            timer.classList.remove("hidden");
+            timerValue.innerText = remainingSeconds;
+            disableSubmit(false);
+        }
 
-                if (data.solved || !data.active) {
-                    timer.classList.add("hidden");
-                    disableSubmit(true);
+        function stopTimer() {
+            if (countdownHandle !== null) {
+                clearInterval(countdownHandle);
+                countdownHandle = null;
+            }
+        }
+
+        function expireTimer() {
+            stopTimer();
+            remainingSeconds = 0;
+            timerValue.innerText = 0;
+            disableSubmit(true);
+            timer.classList.add("hidden");
+
+            if (!document.querySelector(".result.warning")) {
+                let div = document.createElement("div");
+                div.className = "result warning";
+                div.innerText = "Time is up!";
+                document.querySelector(".form-section").appendChild(div);
+            }
+        }
+
+        function startCountdown(seconds) {
+            stopTimer();
+            showTimer(seconds);
+
+            countdownHandle = setInterval(function () {
+                remainingSeconds -= 1;
+
+                if (remainingSeconds <= 0) {
+                    expireTimer();
                     return;
                 }
 
-                timer.classList.remove("hidden");
-                timerValue.innerText = data.remaining_time;
-
-                if (data.remaining_time == 0) {
-                    disableSubmit(true);
-                    timer.classList.add("hidden");
-                    if (!document.querySelector(".result.warning")) {
-                        let div = document.createElement("div");
-                        div.className = "result warning";
-                        div.innerText = "Time is up!";
-                        document.querySelector(".form-section").appendChild(div);
-                    }
-                } else {
-                    disableSubmit(false);
-                }
-
-            } catch(e) {
-                console.log("timer error", e);
-            }
+                timerValue.innerText = remainingSeconds;
+            }, 1000);
         }
-        updateTimer();
-        setInterval(updateTimer, 1000);
-        
-        // refresh the page to reset thw counter and message
-        let button = document.getElementById("download_button");
-        button.onclick = function() {
-            setTimeout(function() {
-                location.href = "/";
-            }, 400);
-        };
+
+        if (remainingSeconds > 0) {
+            showTimer(remainingSeconds);
+            startCountdown(remainingSeconds);
+        }
+
+        downloadButton.addEventListener("click", function () {
+            startCountdown(60);
+        });
+
     </script>
 </body>
+
 </html>
