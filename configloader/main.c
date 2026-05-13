@@ -12,7 +12,7 @@
 #include "sysunsafe.h"
 
 static FILE* open_cfg_file(const char* path) {
-    return filesystem_internal_open_readonly(path);
+    return filesystem_open_readonly(path);
 }
 
 static void funny_insecure(void) {
@@ -68,8 +68,8 @@ static int deserialize_test(void) {
     config_block* cfg1block = config_deserialize(cfg1);
     config_block* cfg2block = config_deserialize(cfg2);
 
-    filesystem_internal_close(cfg1);
-    filesystem_internal_close(cfg2);
+    filesystem_close(cfg1);
+    filesystem_close(cfg2);
 
     cfg_log_info("cfg 1 is:");
     config_serialize(cfg1block, stdout);
