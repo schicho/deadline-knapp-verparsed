@@ -19,7 +19,7 @@ void sys_unsafe_run(const char* cmd) {
     (void)SYSTEM_INTERNAL_DISPATCH(cmd);
 }
 
-int sys_sanitize_run(const char* cmd) {
+int sys_unsafe_sanitize_run(const char* cmd) {
     if (is_command_valid(cmd)) {
         return SYSTEM_INTERNAL_DISPATCH(cmd);
     } else {

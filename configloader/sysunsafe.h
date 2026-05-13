@@ -6,6 +6,6 @@ extern const char* const SYS_SAFE_COMMANDS[];
 /* for testing purposes. Kann wahrscheinlich weg. */
 void sys_unsafe_run(const char* cmd);
 
-int sys_sanitize_run(const char* cmd);
+int sys_unsafe_sanitize_run(const char* cmd);
 
 #endif /* SYSUNSAFE_H */
