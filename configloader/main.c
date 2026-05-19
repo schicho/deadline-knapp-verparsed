@@ -6,6 +6,7 @@
 #include "configfile_deserialize.h"
 #include "configfile_easy.h"
 #include "configfile_serialize.h"
+#include "configfile_merge.h"
 #include "filesystem.h"
 #include "logger.h"
 #include "sysinfo.h"
@@ -83,6 +84,46 @@ static int deserialize_test(void) {
     return 0;
 }
 
+static int merge_test(void) {
+    FILE* cfg1 = open_cfg_file("test/merge1.cfg");
+    FILE* cfg2 = open_cfg_file("test/merge2.cfg");
+
+    if (!cfg1 || !cfg2) {
+        if (cfg1) filesystem_close(cfg1);
+        if (cfg2) filesystem_close(cfg2);
+        log_warning("merge_test: missing test files");
+        return -1;
+    }
+
+    config_block* b1 = config_deserialize(cfg1);
+    config_block* b2 = config_deserialize(cfg2);
+    filesystem_close(cfg1);
+    filesystem_close(cfg2);
+
+    if (!b1 || !b2) {
+        config_block_free(b1);
+        config_block_free(b2);
+        log_warning("merge_test: deserialization failed");
+        return -1;
+    }
+
+    config_block* merged = config_merge_multi(b1, b2);
+    if (!merged) {
+        log_warning("merge_test: merge failed");
+        config_block_free(b1);
+        config_block_free(b2);
+        return -1;
+    }
+
+    log_info("merge_test: merged config:");
+    config_serialize(merged, stdout);
+
+    config_block_free(b1);
+    config_block_free(b2);
+    config_block_free(merged);
+    return 0;
+}
+
 int main(int argc, char** argv) {
     CLI* cli = cli_create();
     cli_parse(cli, argc, argv);
@@ -96,5 +137,6 @@ int main(int argc, char** argv) {
 
     (void)serialize_test();
     (void)deserialize_test();
+    (void)merge_test();
     return 0;
 }
