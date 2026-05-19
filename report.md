@@ -8,11 +8,20 @@ Group Members: `Johann Sebastion Schicho, 12405408; Sophie Pokorny 01633652; Tim
 For CTF:
 - Describe the core idea and vulnerability.
 - Why is this specific vulnerability relevant?
-
-For Research:
-- Include a brief summary of the related paper(s).
-- What is the goal of the artifact?
 ```
+
+We implemented a web service, from which you can download a C program that implements a configuration loader.
+The configuration loader parses and validates nginx configuration files.
+The configuration loader is a program that may read multiple config files and parses them and outputs one combined configuration.
+
+Somewhere hidden layers deep in this configuration loader, through a specially crafted config file a `system()` call may be executed with arbitrary user input. The flag is the function, which calls this `system()`.
+
+The challenge is that the C code is obfuscated randomly per download and the flag needs to be entered within 60 seconds in the web service. Thus, manual search through the code is not possible.
+
+This vulnerability is relevant since misconfigurations of servers are not instantly visible, but often hidden in layers after layers of a software model.
+This problem is getting more severe with AI Agents producing code which looks fine but contains attack vectors which are not easily deteced on first sight. %TODO: add what users are learning by solving the challenge?
+
+
 
 
 ## Core Work
@@ -23,15 +32,29 @@ For CTF:
 - What is the intended solution path (i.e. from not-knowing to getting the flag)?
 - What is the necessary knowledge of someone trying to solve the challenge?
 
-For Research:
-- What was the state of the artifact(s) when you started?
-- What modifications did you made to the research artifact(s)?
-- If you extended them, how did you do it?
-- Would you consider the artifact(s) as available, functional, and reproducible? 
-
 For Both:
 - What technical problems did you encounter, and how did you handle them?
 ```
+### Architecture
+Our code is split into three main components which also resemble the main contents of our challenge:
+Firstly the configloader contains the actual unobfuscated code of the nginx config loader. This code can be run and contains a vulnerability which enables to run arbitrary system calls.
+
+Secondly, the obfuscator obfuscates the configloader code, i.e. file, function and variables names, and macros and puts them into a seperate subfolder. We paid attention that the output produced by the obfuscator can still be compiled so the students could actually run the program by themselves and play around with it.
+The obfuscator does rather simple obfuscation since we do not want to make the obfuscation and thus the challenge to hard. Further, most open source obfuscator are working on a compiler level than on a C level, this however would complicate the challenge even more.
+
+Lastly, the webservice contains the code for actually running the challenge. It contains a Dockerfile which can be run for easy startup. The students can then access the challenge website, where they can press a button to start the challenge. This runs the obfuscator and lets the user download the freshly obfuscated files.
+The user has then a time window of 60 seconds to analyze the code and return the name of the correct function name to solve the challenge successfully.
+
+%TODO: add architecture svg
+
+
+### Solution Path
+The intended solve path is to understand the program generally and find the vulnerability, even though the timer of 60 seconds has then long run out. Next, the attacker should write a `joern` rule, which can find the attack path, i.e. the vulnerable function's name, regardless of obfuscation.
+
+Executing the `joern` rule on top of a newly downloaded and obfuscated version of the program, allows the attacker to find the vulnerable function's name within 60 seconds and solve the challenge by entering the name into the web service.
+
+### Knowledge needed for this challenge
+To solve this challenge, the user needs to know how system calls work and what makes them unsafe. They also need to know how to work with joern, this can however be learned rather quickly or the user could be supported by giving hints if they are stuck.
 
 
 ## Conclusion & Future Work
