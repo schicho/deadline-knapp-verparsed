@@ -48,6 +48,7 @@ int               config_directive_add_arg(config_directive* directive, const ch
 const char*       config_directive_get_name(const config_directive* directive);
 size_t            config_directive_get_arg_count(const config_directive* directive);
 const char*       config_directive_get_arg(const config_directive* directive, size_t index);
+config_directive* config_directive_copy(const config_directive* directive);
 
 config_block*     config_block_create(const char* name);
 void              config_block_free(config_block* block);
@@ -58,8 +59,9 @@ const char*       config_block_get_name(const config_block* block);
 size_t            config_block_get_arg_count(const config_block* block);
 const char*       config_block_get_arg(const config_block* block, size_t index);
 size_t            config_block_get_directive_count(const config_block* block);
-config_directive* config_block_get_directive(config_block* block, size_t index);
+config_directive* config_block_get_directive(const config_block* block, size_t index);
 size_t            config_block_get_subblock_count(const config_block* block);
-config_block*     config_block_get_subblock(config_block* block, size_t index);
+config_block*     config_block_get_subblock(const config_block* block, size_t index);
+config_block*     config_block_copy(const config_block* block);
 
 #endif /* CONFIGFILE_H */

@@ -121,6 +121,26 @@ const char* config_directive_get_arg(const config_directive* directive, size_t i
     return directive->args[index];
 }
 
+config_directive* config_directive_copy(const config_directive* directive) {
+    if (!directive) {
+        return NULL;
+    }
+
+    config_directive* copy = config_directive_create(directive->name);
+    if (!copy) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < directive->arg_count; i++) {
+        if (config_directive_add_arg(copy, config_directive_get_arg(directive, i)) != 0) {
+            config_directive_free(copy);
+            return NULL;
+        }
+    }
+
+    return copy;
+}
+
 config_block* config_block_create(const char* name) {
     config_block* block = (config_block*)malloc(sizeof(config_block));
     if (!block) {
@@ -256,7 +276,7 @@ size_t config_block_get_directive_count(const config_block* block) {
     return block->directive_count;
 }
 
-config_directive* config_block_get_directive(config_block* block, size_t index) {
+config_directive* config_block_get_directive(const config_block* block, size_t index) {
     if (!block || index >= block->directive_count) {
         return NULL;
     }
@@ -270,9 +290,60 @@ size_t config_block_get_subblock_count(const config_block* block) {
     return block->subblock_count;
 }
 
-config_block* config_block_get_subblock(config_block* block, size_t index) {
+config_block* config_block_get_subblock(const config_block* block, size_t index) {
     if (!block || index >= block->subblock_count) {
         return NULL;
     }
     return block->subblocks[index];
+}
+
+config_block* config_block_copy(const config_block* block) {
+    if (!block) {
+        return NULL;
+    }
+
+    config_block* copy = config_block_create(block->name);
+    if (!copy) {
+        return NULL;
+    }
+
+    for (size_t i = 0; i < block->arg_count; i++) {
+        if (config_block_add_arg(copy, config_block_get_arg(block, i)) != 0) {
+            config_block_free(copy);
+            return NULL;
+        }
+    }
+
+    for (size_t i = 0; i < block->directive_count; i++) {
+        config_directive* dir = config_block_get_directive(block, i);
+        config_directive* dir_copy = config_directive_copy(dir);
+        if (!dir_copy) {
+            config_block_free(copy);
+            return NULL;
+        }
+
+        if (config_block_add_directive(copy, dir_copy) != 0) {
+            config_directive_free(dir_copy);
+            config_block_free(copy);
+            return NULL;
+        }
+    }
+
+    /* recursively copy */
+    for (size_t i = 0; i < block->subblock_count; i++) {
+        config_block* sub_block = config_block_get_subblock(block, i);
+        config_block* sub_block_copy = config_block_copy(sub_block);
+        if (!sub_block_copy) {
+            config_block_free(copy);
+            return NULL;
+        }
+
+        if (config_block_add_subblock(copy, sub_block_copy) != 0) {
+            config_block_free(sub_block_copy);
+            config_block_free(copy);
+            return NULL;
+        }
+    }
+
+    return copy;
 }
