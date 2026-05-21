@@ -8,6 +8,7 @@ typedef int LOG_LEVEL;
 #define LOG_WARNING 2
 #define LOG_ERROR   3
 
+void log_set_lvl_visibility(LOG_LEVEL level);
 void log_lvl(LOG_LEVEL level, const char* format, ...);
 void log_info(const char* format, ...);
 void log_debug(const char* format, ...);
