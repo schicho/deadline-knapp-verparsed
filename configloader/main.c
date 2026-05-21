@@ -93,14 +93,17 @@ static void funny_insecure(void) {
     }
 }
 
-static void start_up_check(const CLI* cli) {
+static void set_log_lvl(const CLI* cli) {
     if (cli->verbose) {
-        log_info("Verbose Mode: %s", cli->verbose ? "ON" : "OFF");
-        log_info("Output File: %s", cli->output_file);
-        log_info("Input Args: %d", cli->args_count);
-        for (int i = 0; i < cli->args_count; i++) {
-            log_info("Input %d: %s", i, cli->args[i]);
-        }
+        log_set_lvl_visibility(LOG_INFO);
+    }
+}
+
+static void start_up_check(const CLI* cli) {
+    log_info("Verbose Mode: %s", cli->verbose ? "ON" : "OFF");
+    log_info("Output File: %s", cli->output_file);
+    for (int i = 0; i < cli->args_count; i++) {
+        log_info("Input %d: %s", i + 1, cli->args[i]);
     }
 }
 
@@ -166,6 +169,7 @@ int main(int argc, char** argv) {
     CLI* cli = cli_create();
     cli_parse(cli, argc, argv);
 
+    set_log_lvl(cli);
     start_up_check(cli);
 
     int    n = cli->args_count;

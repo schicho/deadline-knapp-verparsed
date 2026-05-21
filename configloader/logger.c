@@ -4,6 +4,8 @@
 
 #include "printer.h"
 
+static LOG_LEVEL LOG_LVL_VISIBILITY = LOG_WARNING;
+
 static const char* log_level_string(LOG_LEVEL level) {
     char* level_string = NULL;
     if (level < LOG_INFO || level > LOG_ERROR) {
@@ -16,10 +18,16 @@ static const char* log_level_string(LOG_LEVEL level) {
 }
 
 static void vlog(LOG_LEVEL level, const char* format, va_list args) {
+    if (level < LOG_LVL_VISIBILITY) return;
+
     const char* level_str = log_level_string(level);
     cfg_err_printf("[%s] ", level_str);
     cfg_err_vprintf(format, args);
     cfg_err_printf("\n");
+}
+
+void log_set_lvl_visibility(LOG_LEVEL level) {
+    LOG_LVL_VISIBILITY = level;
 }
 
 void log_lvl(LOG_LEVEL level, const char* format, ...) {
