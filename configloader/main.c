@@ -165,6 +165,30 @@ static error merge_config_files(FILE* out, int n, FILE** in) {
     return 0;
 }
 
+static void main_log_error(error err) {
+    switch (err) {
+        case INVALID_ARGS_ERR:
+            log_error("No input config files provided.");
+            break;
+        case FILE_OPEN_ERR:
+            log_error("Input config file can not be opened.");
+            break;
+        case DESERIALIZE_ERR:
+            log_error("Input config file can not be loaded.");
+            break;
+        case SERIALIZE_ERR:
+            log_error("Merged config file can not be written.");
+            break;
+        case MERGE_ERR:
+            log_error("Input files can not be merged. Duplicate directives were found.");
+            break;
+        case OO_MEMORY_ERR:
+            log_error("Could not allocate memory.");
+        default:
+            break;
+    }
+}
+
 int main(int argc, char** argv) {
     CLI* cli = cli_create();
     cli_parse(cli, argc, argv);
@@ -177,7 +201,9 @@ int main(int argc, char** argv) {
     FILE** in_files = open_input_files(n, cli->args);
 
     error err = merge_config_files(out_file, n, in_files);
+    main_log_error(err);
 
+    filesystem_close(out_file);
     close_input_files_and_free(n, in_files);
     return err;
 }
