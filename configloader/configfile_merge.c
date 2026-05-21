@@ -5,9 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef enum { NO_ERROR, DUPLICATE_DIRECTIVE, OUT_OF_MEMORY } merge_error;
+typedef enum { NO_ERROR, DUPLICATE_PARTIAL_DIRECTIVE, OUT_OF_MEMORY } merge_error;
 
-typedef enum { DIR_NOT_EQ, DIR_PARTIALLY_EQ, DIR_EQ } dir_equal;
+typedef enum {
+    DIR_NOT_EQ,       /* not equal is fine, completely different directive. */
+    DIR_PARTIALLY_EQ, /* parially equal errors, same directive name, but different args. */
+    DIR_EQ            /* equal is also fine, same name and args. we can just keep it. */
+} dir_equal;
 
 typedef struct {
     size_t into_index;
@@ -66,7 +70,7 @@ static merge_error merge_into(config_block* into, const config_block* other) {
                 case DIR_NOT_EQ:
                     break;
                 case DIR_PARTIALLY_EQ:
-                    return DUPLICATE_DIRECTIVE;
+                    return DUPLICATE_PARTIAL_DIRECTIVE;
                 case DIR_EQ:
                     already_present = true;
                     break;
