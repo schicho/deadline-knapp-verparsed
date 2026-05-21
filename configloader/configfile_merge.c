@@ -187,6 +187,26 @@ config_block* config_merge(const config_block* one, const config_block* two) {
     return merge;
 }
 
+config_block* config_merge_n(const int n, config_block** blocks) {
+    if (n <= 0 || !blocks) {
+        return NULL;
+    }
+
+    config_block* merge = config_block_copy(blocks[0]);
+    if (!merge) {
+        return NULL;
+    }
+
+    for (int i = 1; i < n; i++) {
+        merge_error err = merge_into(merge, blocks[i]);
+        if (err != NO_ERROR) {
+            config_block_free(merge);
+            return NULL;
+        }
+    }
+    return merge;
+}
+
 config_block* _config_merge_multi(const config_block* block, ...) {
     if (!block) {
         return NULL;
