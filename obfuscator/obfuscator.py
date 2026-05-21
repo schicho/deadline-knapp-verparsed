@@ -4,17 +4,21 @@ Description: A basic python script to aid in the obfuscation of c and c++ source
 Authors: Sam "Alice" Blair, Winston Howard, Chance Sweetser
 Created Date: 05/04/20
 """
-
 import os
 import re
 import random
 import string
 import argparse
 import shutil
+import json
 
 
 DEFAULT_INPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "configloader"))
 DEFAULT_OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "out"))
+
+FLAG = "sys_unsafe_run"
+FLAG_FILE = "sysunsafe.c"
+OUTPUT_DICT = {}
 
 
 def variable_renamer(given_string):
@@ -249,6 +253,15 @@ def build_output_name_map(source_files):
     return output_name_map
 
 
+def write_output_dict(output_dict, output_dir):
+    """
+    Persist the obfuscation metadata for the webservice.
+    """
+    output_dict_path = os.path.join(output_dir, "output_dict.json")
+    with open(output_dict_path, "w", encoding="utf-8") as file_data:
+        json.dump(output_dict, file_data, indent=2, sort_keys=True)
+
+
 def clear_output_directory(output_dir):
     """
     Remove all files and folders from the output directory.
@@ -327,6 +340,14 @@ def main():
         build_variable_dictionary(file_string, shared_dictionary)
         build_macro_dictionary(file_string, shared_dictionary)
 
+    if FLAG not in shared_dictionary:
+        raise KeyError("Flag symbol not found in obfuscation dictionary: {}".format(FLAG))
+
+
+    OUTPUT_DICT["flag"] = shared_dictionary[FLAG]
+    OUTPUT_DICT["flag_file"] = obfuscated_names[FLAG_FILE]
+    
+
     for filename in os.listdir(input_dir):
         print("\n {} : \r".format(filename))
         if(filename in file_contents):
@@ -341,6 +362,7 @@ def main():
         else:
             print("FAIL")
 
+    write_output_dict(OUTPUT_DICT, output_dir)
 
 if __name__ == "__main__":
     main()

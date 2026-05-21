@@ -4,16 +4,21 @@ import time
 import zipfile
 import subprocess
 import sys
+import shutil
+import secrets
 from pathlib import Path
 from flask import Flask, render_template, send_file, request, redirect, session
+import json
 
 app = Flask(__name__)
 app.secret_key = "supersecret_key"
 
+
 CHALLENGE_TIME = 60
 flag = "vulnerable_function"
 
-
+# When set to "1", keep per-run artifacts for debugging instead of deleting them.
+KEEP_RUNS = os.getenv("OBFUSCATOR_KEEP_RUNS", "0") == "1"
 
 def get_time():
     starting_time = session.get("start_time")
@@ -24,23 +29,30 @@ def get_time():
     return max(0, int(CHALLENGE_TIME - elapsed))
 
 
-def build_challenge_name(output_dir):
-    if not output_dir.exists() or not output_dir.is_dir():
-        return "challenge"
+def build_challenge_name(run_id):
+    return f"challenge_{run_id}"
 
-    output_files = sorted(
-        file_path
-        for file_path in output_dir.iterdir()
-        if file_path.is_file() and file_path.name != "Makefile"
-    )
-    if not output_files:
-        return "challenge"
 
-    first_output_file = output_files[0]
-    with open(first_output_file, "rb") as file_data:
-        digest = hashlib.sha256(file_data.read()).hexdigest()
+def generate_run_id():
+    return f"{secrets.randbelow(10 ** 8):08d}"
 
-    return f"challenge_{digest[:5]}"
+
+def load_output_dict(obfuscator_dir):
+    output_dict_path = obfuscator_dir / "output_dict.json"
+
+    if not output_dict_path.is_file():
+        raise FileNotFoundError(f"Missing obfuscation metadata: {output_dict_path}")
+
+    with open(output_dict_path, "r", encoding="utf-8") as file_data:
+        return json.load(file_data)
+
+
+def cleanup_run_artifacts(run_dir):
+    if not KEEP_RUNS:
+        print(f"Cleaning up run artifacts: {run_dir}")
+        shutil.rmtree(run_dir, ignore_errors=True)
+    else:
+        print(f"Keeping run artifacts for debugging: {run_dir}")
 
 
 @app.route("/")
@@ -57,19 +69,23 @@ def index():
 @app.route("/start")
 def start():
     session.clear()
-    session["answer"] = flag
     session["solved"] = False
 
     # Run obfuscator each time to generate a fresh obfuscation
     base_dir = Path(__file__).resolve().parent.parent
     obfuscator_script = base_dir / "obfuscator" / "obfuscator.py"
     input_dir = base_dir / "configloader"
-    output_dir = base_dir / "obfuscator" / "out"
 
     # Ensure tmp exists inside webservice
     tmp_dir = base_dir / "webservice" / "tmp"
     tmp_dir.mkdir(parents=True, exist_ok=True)
-    zip_path = tmp_dir / "challenge.zip"
+    run_id = generate_run_id()
+    run_dir = tmp_dir / run_id
+    output_dir = run_dir / "out"
+    zip_name = f"{build_challenge_name(run_id)}.zip"
+    zip_path = run_dir / zip_name
+
+    run_dir.mkdir(parents=True, exist_ok=False)
 
     try:
         # Call the obfuscator as a subprocess so it produces a new, randomized output
@@ -79,6 +95,7 @@ def start():
             cwd=str(base_dir),
         )
     except subprocess.CalledProcessError:
+        cleanup_run_artifacts(run_dir)
         return render_template(
             "index.html",
             result="Obfuscation failed. Try again.",
@@ -86,21 +103,39 @@ def start():
             remaining_time=get_time(),
             solved=False,
         )
+    
+    # load the output dict to get the correct answer for the current obfuscation
+    try:
+        output_dict = load_output_dict(output_dir)
+    except (FileNotFoundError, json.JSONDecodeError):
+        cleanup_run_artifacts(run_dir)
+        return render_template(
+            "index.html",
+            result="Failed to load obfuscation metadata.",
+            result_type="error",
+            remaining_time=get_time(),
+            solved=False,
+        )
 
+    session["answer"] = output_dict.get("flag", flag)
+    session["flag_file"] = output_dict.get("flag_file")
+
+    print(f"Generated challenge with answer: {session['answer']} (file: {session['flag_file']})")
     session["start_time"] = time.time()
-
-    # Package the obfuscated output files into a zip and return
-    challenge_name = build_challenge_name(output_dir)
-    zip_path = tmp_dir / f"{challenge_name}.zip"
 
     with zipfile.ZipFile(str(zip_path), "w") as f_zip:
         if output_dir.exists() and output_dir.is_dir():
             for file_name in sorted(os.listdir(str(output_dir))):
+                if file_name == "output_dict.json":
+                    continue
                 file_path = output_dir / file_name
                 if file_path.is_file():
                     f_zip.write(str(file_path), arcname=file_name)
 
-    return send_file(str(zip_path), as_attachment=True, download_name=f"{challenge_name}.zip")
+    response = send_file(str(zip_path), as_attachment=True, download_name=zip_name)
+    cleanup_run_artifacts(run_dir)
+
+    return response
 
 
 @app.route("/submit", methods=["POST"])

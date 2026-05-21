@@ -18,11 +18,8 @@ Somewhere hidden layers deep in this configuration loader, through a specially c
 
 The challenge is that the C code is obfuscated randomly per download and the flag needs to be entered within 60 seconds in the web service. Thus, manual search through the code is not possible.
 
-This vulnerability is relevant since misconfigurations of servers are not instantly visible, but often hidden in layers after layers of a software model.
+This vulnerability is relevant since some misconfigurations of servers are not instantly visible, but often hidden in layers after layers of a software model.
 This problem is getting more severe with AI Agents producing code which looks fine but contains attack vectors which are not easily deteced on first sight. %TODO: add what users are learning by solving the challenge?
-
-
-
 
 ## Core Work
 
@@ -40,18 +37,42 @@ Our code is split into three main components which also resemble the main conten
 Firstly the configloader contains the actual unobfuscated code of the nginx config loader. This code can be run and contains a vulnerability which enables to run arbitrary system calls.
 
 Secondly, the obfuscator obfuscates the configloader code, i.e. file, function and variables names, and macros and puts them into a seperate subfolder. We paid attention that the output produced by the obfuscator can still be compiled so the students could actually run the program by themselves and play around with it.
-The obfuscator does rather simple obfuscation since we do not want to make the obfuscation and thus the challenge to hard. Further, most open source obfuscator are working on a compiler level than on a C level, this however would complicate the challenge even more.
+The obfuscator does rather simple obfuscation since we do not want to make the obfuscation and thus the challenge too hard. Further, most open source obfuscators are working on a compiler level than on a C level, this however would complicate the challenge even more.
 
 Lastly, the webservice contains the code for actually running the challenge. It contains a Dockerfile which can be run for easy startup. The students can then access the challenge website, where they can press a button to start the challenge. This runs the obfuscator and lets the user download the freshly obfuscated files.
 The user has then a time window of 60 seconds to analyze the code and return the name of the correct function name to solve the challenge successfully.
 
-%TODO: add architecture svg
+![Picture of our proposed architecture](architecture.svg)
 
 
 ### Solution Path
 The intended solve path is to understand the program generally and find the vulnerability, even though the timer of 60 seconds has then long run out. Next, the attacker should write a `joern` rule, which can find the attack path, i.e. the vulnerable function's name, regardless of obfuscation.
 
-Executing the `joern` rule on top of a newly downloaded and obfuscated version of the program, allows the attacker to find the vulnerable function's name within 60 seconds and solve the challenge by entering the name into the web service.
+Executing the `joern` rule on top of a newly downloaded and obfuscated version of the program allows the attacker to find the vulnerable function's name within 60 seconds and solve the challenge by entering the name into the web service.
+
+Finding the right function name can be achieved by running following commands:
+
+1. Start joern in the directory of the unzipped code directory
+```joern```
+2. import the code by typing into the joern shell:
+
+```sc
+importCode(inputPath=".", projectName="ctf")
+```
+3. Define the source and sink:
+```sc
+def sink = cpg.call("sys_run")
+def source = cpg.call("open_cfg_file") 
+```
+
+4. Get the sinks which are reachable by these flows:
+
+```sc
+sink.reachableByFlows(source).p
+```
+
+%TODO rest
+
 
 ### Knowledge needed for this challenge
 To solve this challenge, the user needs to know how system calls work and what makes them unsafe. They also need to know how to work with joern, this can however be learned rather quickly or the user could be supported by giving hints if they are stuck.
@@ -64,8 +85,13 @@ What are the limitations of your current implementation?
 If a future student were to pick up this project, what is the logical "next step"?
 ```
 
+Logical next steps would be to add new vulnerabilities, where then one is randomly picked and add to the code.
+
+Overall this project is a nice and interesting way to learn about the use of joern, the obfuscation of code and hidden configuration errors which should be considered and tested thorougly when pushing software to production.
+
 ## Generative AI (If Applicable)
 
 ```
 Provide a brief summary of how generative tools actually influenced the project compared to your initial proposal.
 ```
+Only minimally, it helped creating the style.css of our webservice to speed up development.
