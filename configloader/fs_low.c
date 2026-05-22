@@ -1,5 +1,6 @@
 #include "fs_low.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -9,9 +10,21 @@
 #include "fsops.h"
 
 static int path_sanity_check(const char* path) {
-    /* todo: change this up */
-    (void)path;
-    return 0;
+    if (path == NULL || path[0] == '\0') {
+        return 1;
+    }
+
+    int saw_non_space = 0;
+    for (const unsigned char* current = (const unsigned char*)path; *current != '\0'; ++current) {
+        if (iscntrl(*current)) {
+            return 1;
+        }
+        if (!isspace(*current)) {
+            saw_non_space = 1;
+        }
+    }
+
+    return !saw_non_space;
 }
 
 /* https://www.man7.org/linux/man-pages/man3/fopen.3.html */

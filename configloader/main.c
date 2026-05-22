@@ -113,7 +113,8 @@ static config_block* merge_config_blocks(int n, config_block** blocks) {
 }
 
 static error merge_config_files(FILE* out, int n, FILE** in) {
-    if (n <= 0 || !in) return INVALID_ARGS_ERR;
+    if (n <= 0) return INVALID_ARGS_ERR;
+    if (!in) return FILE_OPEN_ERR;
 
     config_block** blocks = (config_block**)calloc(n, sizeof(config_block*));
     if (!blocks) return OO_MEMORY_ERR;
@@ -202,6 +203,13 @@ int main(int argc, char** argv) {
     int    n = cli->args_count;
     FILE*  out_file = open_output_file(cli->output_file);
     FILE** in_files = open_input_files(n, cli->args);
+
+    if (!out_file || !in_files) {
+        main_log_error(FILE_OPEN_ERR);
+        filesystem_close(out_file);
+        close_input_files_and_free(n, in_files);
+        return FILE_OPEN_ERR;
+    }
 
     error err = merge_config_files(out_file, n, in_files);
     main_log_error(err);
