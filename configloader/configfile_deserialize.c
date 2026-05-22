@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "logger.h"
+
 typedef enum {
     TOKEN_EOF,
     TOKEN_WORD,
@@ -135,6 +137,7 @@ static token lex_token(FILE* stream) {
         for (;;) {
             ch = fgetc(stream);
             if (ch == EOF) {
+                log_info("unterminated quoted token encountered during deserialization");
                 free(buffer);
                 tok.kind = TOKEN_ERROR;
                 return tok;
@@ -149,6 +152,7 @@ static token lex_token(FILE* stream) {
             if (ch == '\\') {
                 ch = fgetc(stream);
                 if (ch == EOF) {
+                    log_info("unterminated escape sequence encountered during deserialization");
                     free(buffer);
                     tok.kind = TOKEN_ERROR;
                     return tok;
@@ -239,10 +243,12 @@ static int add_tokens_to_block(config_block* block, token_list* args) {
 
 static int parse_statement(config_block* block, FILE* stream, token* head) {
     token_list args = {0};
+    log_debug("parsing statement starting with '%s'", head->text);
 
     for (;;) {
         token next = lex_token(stream);
         if (next.kind == TOKEN_ERROR) {
+            log_info("failed to lex token while parsing statement '%s'", head->text);
             token_free(&next);
             goto cleanup;
         }
@@ -266,6 +272,7 @@ static int parse_statement(config_block* block, FILE* stream, token* head) {
 
             if (add_tokens_to_directive(directive, &args) != 0 ||
                 config_block_add_directive(block, directive) != 0) {
+                log_error("failed to store directive '%s'", head->text);
                 config_directive_free(directive);
                 token_free(&next);
                 goto cleanup;
@@ -287,6 +294,7 @@ static int parse_statement(config_block* block, FILE* stream, token* head) {
             if (add_tokens_to_block(subblock, &args) != 0 ||
                 parse_contents(subblock, stream, 1) != 0 ||
                 config_block_add_subblock(block, subblock) != 0) {
+                log_error("failed to store subblock '%s'", head->text);
                 config_block_free(subblock);
                 token_free(&next);
                 goto cleanup;
@@ -312,6 +320,7 @@ static int parse_contents(config_block* block, FILE* stream, int expect_closing_
     for (;;) {
         token head = lex_token(stream);
         if (head.kind == TOKEN_ERROR) {
+            log_info("tokenization failed while parsing block contents");
             token_free(&head);
             return -1;
         }
@@ -327,6 +336,7 @@ static int parse_contents(config_block* block, FILE* stream, int expect_closing_
         }
 
         if (head.kind != TOKEN_WORD || !head.text) {
+            log_info("unexpected token while parsing block contents");
             token_free(&head);
             return -1;
         }
@@ -348,9 +358,12 @@ config_block* config_deserialize(FILE* stream) {
     }
 
     if (parse_contents(main_block, stream, 0) != 0) {
+        log_error("failed to deserialize configuration input");
         config_block_free(main_block);
         return NULL;
     }
+
+    log_info("configuration deserialization completed successfully");
 
     return main_block;
 }
