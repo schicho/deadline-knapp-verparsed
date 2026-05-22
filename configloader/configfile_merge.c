@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "logger.h"
+
 typedef enum { NO_ERROR, DUPLICATE_PARTIAL_DIRECTIVE, OUT_OF_MEMORY } merge_error;
 
 typedef enum {
@@ -58,6 +60,9 @@ static dir_equal directive_equals(const config_directive* a, const config_direct
     return DIR_EQ;
 }
 
+#define DIRECTIVE_ARG1_OR_EMPTY(d) \
+    (config_directive_get_arg_count((d)) > 0 ? config_directive_get_arg((d), 0) : "")
+
 static merge_error merge_into(config_block* into, const config_block* other) {
     /* merge directives. exact matches stay once, same-name conflicts error out. */
     for (size_t i = 0; i < config_block_get_directive_count(other); i++) {
@@ -66,13 +71,20 @@ static merge_error merge_into(config_block* into, const config_block* other) {
         bool already_present = false;
         for (size_t j = 0; j < config_block_get_directive_count(into); j++) {
             config_directive* dir_into = config_block_get_directive(into, j);
+            const char*       name = config_directive_get_name(dir_into);
+            const char*       into_arg1 = DIRECTIVE_ARG1_OR_EMPTY(dir_into);
+            const char*       other_arg1 = DIRECTIVE_ARG1_OR_EMPTY(dir_other);
             switch (directive_equals(dir_into, dir_other)) {
                 case DIR_NOT_EQ:
                     break;
                 case DIR_PARTIALLY_EQ:
+                    log_error(
+                        "can't merge duplicate directive '%s' with different args '%s' and '%s'",
+                        name, into_arg1, other_arg1);
                     return DUPLICATE_PARTIAL_DIRECTIVE;
                 case DIR_EQ:
                     already_present = true;
+                    log_warning("merging equivalent directive '%s %s'", name, into_arg1);
                     break;
             }
 
@@ -133,10 +145,20 @@ static merge_error merge_into(config_block* into, const config_block* other) {
         }
     }
 
+    /* merge matching subblocks recursively */
     for (size_t i = 0; i < matching_pair_count; i++) {
         config_block* subblock_into = config_block_get_subblock(into, matching_pairs[i].into_index);
         config_block* subblock_other =
             config_block_get_subblock(other, matching_pairs[i].other_index);
+
+        const char* name = config_block_get_name(subblock_into);
+        if (config_block_get_arg_count(subblock_into) > 0) {
+            const char* arg1 = config_block_get_arg(subblock_into, 0);
+            log_info("merging matching subblock '%s %s'", name, arg1);
+        } else {
+            log_info("merging matching subblock '%s'", name);
+        }
+
         merge_error err = merge_into(subblock_into, subblock_other);
         if (err != NO_ERROR) {
             free(other_subblock_matched);
