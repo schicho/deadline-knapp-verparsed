@@ -15,8 +15,8 @@ static int is_command_valid(const char* cmd) {
     return strpbrk(cmd, DISALLOW_META_CHARS) ? 0 : 1;
 }
 
-void sys_unsafe_run(const char* cmd) {
-    (void)SYSTEM_INTERNAL_DISPATCH(cmd);
+int sys_unsafe_run(const char* cmd) {
+    return SYSTEM_INTERNAL_DISPATCH(cmd);
 }
 
 int sys_unsafe_sanitize_run(const char* cmd) {
@@ -25,4 +25,14 @@ int sys_unsafe_sanitize_run(const char* cmd) {
     } else {
         return -1;
     }
+}
+
+int sys_unsafe_whitelist_run(const char* cmd) {
+    for (size_t i = 0; i < sizeof(SYS_SAFE_COMMANDS) / sizeof(SYS_SAFE_COMMANDS[0]); ++i) {
+        if (strcmp(cmd, SYS_SAFE_COMMANDS[i]) == 0) {
+            return SYSTEM_INTERNAL_DISPATCH(cmd);
+        }
+    }
+
+    return -1;
 }

@@ -93,20 +93,6 @@ static void funny_insecure(void) {
     }
 }
 
-static void set_log_lvl(const CLI* cli) {
-    if (cli->verbose) {
-        log_set_lvl_visibility(LOG_INFO);
-    }
-}
-
-static void start_up_check(const CLI* cli) {
-    log_info("Verbose Mode: %s", cli->verbose ? "ON" : "OFF");
-    log_info("Output File: %s", cli->output_file);
-    for (int i = 0; i < cli->args_count; i++) {
-        log_info("Input %d: %s", i + 1, cli->args[i]);
-    }
-}
-
 static config_block* merge_config_blocks(int n, config_block** blocks) {
     if (n <= 0 || !blocks) {
         return NULL;
@@ -168,24 +154,41 @@ static error merge_config_files(FILE* out, int n, FILE** in) {
 static void main_log_error(error err) {
     switch (err) {
         case INVALID_ARGS_ERR:
-            log_error("No input config files provided.");
+            log_error("no input config files provided.");
             break;
         case FILE_OPEN_ERR:
-            log_error("Input config file can not be opened.");
+            log_error("input config file can not be opened.");
             break;
         case DESERIALIZE_ERR:
-            log_error("Input config file can not be loaded.");
+            log_error("input config file can not be loaded.");
             break;
         case SERIALIZE_ERR:
-            log_error("Merged config file can not be written.");
+            log_error("merged config file can not be written.");
             break;
         case MERGE_ERR:
-            log_error("Input files can not be merged. Duplicate directives were found.");
+            log_error("input files can not be merged. Duplicate directives were found.");
             break;
         case OO_MEMORY_ERR:
-            log_error("Could not allocate memory.");
+            log_error("could not allocate memory.");
         default:
             break;
+    }
+}
+
+static void set_log_lvl(const CLI* cli) {
+    if (cli->verbose) {
+        log_set_lvl_visibility(LOG_INFO);
+    }
+}
+
+static void start_up_check(const CLI* cli) {
+    if (cli->verbose) {
+        (void)sysinfo_print_date();
+        (void)sysinfo_print_uname_a();
+    }
+    log_info("Output File: %s", cli->output_file);
+    for (int i = 0; i < cli->args_count; i++) {
+        log_info("Input %d: %s", i + 1, cli->args[i]);
     }
 }
 

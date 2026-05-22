@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "logger.h"
 #include "printer.h"
 #include "string.h"
 
@@ -73,5 +74,6 @@ static int serialize_block(config_block* block, int indent_level, FILE* stream) 
 }
 
 int config_serialize(config_block* block, FILE* stream) {
+    log_debug("serializing configuration");
     return serialize_block(block, 0, stream);
 }

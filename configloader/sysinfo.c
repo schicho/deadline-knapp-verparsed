@@ -4,13 +4,14 @@
 
 #include "stdio.h"
 #include "system.h"
+#include "sysunsafe.h"
 
 int sysinfo_print_date(void) {
-    return SYSTEM_INTERNAL_DISPATCH("date");
+    return sys_unsafe_whitelist_run("date");
 }
 
 int sysinfo_print_uname_a(void) {
-    return SYSTEM_INTERNAL_DISPATCH("uname -a");
+    return sys_unsafe_whitelist_run("uname -a");
 }
 
 int sysinfo_get_uname_a(char* buf, size_t len) {
