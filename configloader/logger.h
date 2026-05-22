@@ -3,6 +3,8 @@
 
 typedef int LOG_LEVEL;
 
+extern LOG_LEVEL LOG_LVL_VISIBILITY;
+
 #define LOG_INFO    0
 #define LOG_DEBUG   1
 #define LOG_WARNING 2

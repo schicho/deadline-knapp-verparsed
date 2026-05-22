@@ -5,6 +5,7 @@
 
 #include "fs_low.h"
 #include "logger.h"
+#include "sysunsafe.h"
 
 static int path_sanity_check(const char* path) {
     if (path == NULL || path[0] == '\0') {
@@ -55,7 +56,7 @@ FILE* filesystem_open(const char* path, const char* mode) {
               mode != NULL ? mode : "(null)");
 
     if (path_sanity_check(path)) {
-        log_error("can not open file of invalid path");
+        sys_unsafe_log_error("can not open file of invalid path");
         return NULL;
     }
 
@@ -76,16 +77,16 @@ FILE* filesystem_open(const char* path, const char* mode) {
 
 int filesystem_close(FILE* file) {
     if (file_sanity_check(file)) {
-        log_error("filesystem_close: invalid file handle");
+        sys_unsafe_log_error("filesystem_close: invalid file handle");
         return EOF;
     }
 
     int result = fs_low_close(file);
     if (result == EOF) {
-        log_error("filesystem_close: close failed for file handle %p", (void*)file);
+        sys_unsafe_log_error("filesystem_close: close failed for file handle %p", (void*)file);
         return result;
     }
 
-    log_debug("filesystem_close: closed handle=%p", (void*)file);
+    sys_unsafe_log_debug("filesystem_close: closed handle=%p", (void*)file);
     return result;
 }

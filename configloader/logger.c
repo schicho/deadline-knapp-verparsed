@@ -4,7 +4,7 @@
 
 #include "printer.h"
 
-static LOG_LEVEL LOG_LVL_VISIBILITY = LOG_WARNING;
+LOG_LEVEL LOG_LVL_VISIBILITY = LOG_WARNING;
 
 static const char* log_level_string(LOG_LEVEL level) {
     char* level_string = NULL;
