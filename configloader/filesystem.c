@@ -61,7 +61,8 @@ FILE* filesystem_open(const char* path, const char* mode) {
     }
 
     if (mode_sanity_check(mode)) {
-        log_error("can not open file with invalid mode '%s'", mode != NULL ? mode : "(null)");
+        sys_unsafe_log_error("can not open file with invalid mode '%c'",
+                             mode != NULL ? mode[0] : '?');
         return NULL;
     }
 

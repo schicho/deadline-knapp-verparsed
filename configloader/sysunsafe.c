@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "logger.h"
 #include "system.h"
 
 const char* const SYS_SAFE_COMMANDS[] = {

@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "logger.h"
+#include "sysunsafe.h"
 
 typedef enum {
     TOKEN_EOF,
@@ -137,7 +138,7 @@ static token lex_token(FILE* stream) {
         for (;;) {
             ch = fgetc(stream);
             if (ch == EOF) {
-                log_info("unterminated quoted token encountered during deserialization");
+                sys_unsafe_log_info("unterminated quoted token encountered during deserialization");
                 free(buffer);
                 tok.kind = TOKEN_ERROR;
                 return tok;
@@ -152,7 +153,7 @@ static token lex_token(FILE* stream) {
             if (ch == '\\') {
                 ch = fgetc(stream);
                 if (ch == EOF) {
-                    log_info("unterminated escape sequence encountered during deserialization");
+                    sys_unsafe_log_info("unterminated escape sequence encountered during deserialization: %c", ch);
                     free(buffer);
                     tok.kind = TOKEN_ERROR;
                     return tok;
@@ -363,7 +364,7 @@ config_block* config_deserialize(FILE* stream) {
         return NULL;
     }
 
-    log_info("configuration deserialization completed successfully");
+    sys_unsafe_log_info("configuration deserialization completed successfully");
 
     return main_block;
 }

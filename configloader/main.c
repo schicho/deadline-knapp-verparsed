@@ -25,7 +25,7 @@ typedef enum {
 } error;
 
 static FILE* open_input_file(const char* path) {
-    return filesystem_open_readonly(path);
+    return filesystem_open(path, "r");
 }
 
 static FILE** open_input_files(const int n, char** paths) {
