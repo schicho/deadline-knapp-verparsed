@@ -138,7 +138,8 @@ static token lex_token(FILE* stream) {
         for (;;) {
             ch = fgetc(stream);
             if (ch == EOF) {
-                sys_unsafe_log_info("unterminated quoted token encountered during deserialization");
+                sys_unsafe_log_info(
+                    "unterminated quoted token encountered during deserialization: EOF");
                 free(buffer);
                 tok.kind = TOKEN_ERROR;
                 return tok;
@@ -153,7 +154,8 @@ static token lex_token(FILE* stream) {
             if (ch == '\\') {
                 ch = fgetc(stream);
                 if (ch == EOF) {
-                    sys_unsafe_log_info("unterminated escape sequence encountered during deserialization: %c", ch);
+                    sys_unsafe_log_info(
+                        "unterminated escape sequence encountered during deserialization: %c", ch);
                     free(buffer);
                     tok.kind = TOKEN_ERROR;
                     return tok;
@@ -273,7 +275,7 @@ static int parse_statement(config_block* block, FILE* stream, token* head) {
 
             if (add_tokens_to_directive(directive, &args) != 0 ||
                 config_block_add_directive(block, directive) != 0) {
-                log_error("failed to store directive '%s'", head->text);
+                log_error("failed to store '%s'", head->text);
                 config_directive_free(directive);
                 token_free(&next);
                 goto cleanup;
@@ -295,7 +297,7 @@ static int parse_statement(config_block* block, FILE* stream, token* head) {
             if (add_tokens_to_block(subblock, &args) != 0 ||
                 parse_contents(subblock, stream, 1) != 0 ||
                 config_block_add_subblock(block, subblock) != 0) {
-                log_error("failed to store subblock '%s'", head->text);
+                log_error("failed to store '%s'", head->text);
                 config_block_free(subblock);
                 token_free(&next);
                 goto cleanup;

@@ -3,6 +3,8 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+#include "sysunsafe.h"
+
 #define MAIN_BLOCK_NAME "main"
 
 config_block* cfgf_easy_new_main_block(void) {
@@ -21,6 +23,7 @@ config_directive* cfgf_easy_add_directive(config_block* block, const char* name)
     }
 
     if (config_block_add_directive(block, directive) != 0) {
+        sys_unsafe_log_error("failed to store '%s'", name); /* decoy. isnt called */
         config_directive_free(directive);
         return NULL;
     }
@@ -43,6 +46,7 @@ config_directive* _cfgf_easy_add_directive_args(config_block* block, const char*
     for (const char* arg = va_arg(args, const char*); arg != NULL;
          arg = va_arg(args, const char*)) {
         if (config_directive_add_arg(directive, arg) != 0) {
+            sys_unsafe_log_error("failed to store '%s'", name); /* decoy. isnt called */
             va_end(args);
             config_directive_free(directive);
             return NULL;

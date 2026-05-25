@@ -88,6 +88,6 @@ int filesystem_close(FILE* file) {
         return result;
     }
 
-    sys_unsafe_log_debug("filesystem_close: closed handle=%p", (void*)file);
+    sys_unsafe_log_info("filesystem_close: closed handle=%p", (void*)file);
     return result;
 }

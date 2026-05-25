@@ -72,27 +72,6 @@ static FILE* open_output_file(const char* name) {
     return filesystem_open(name, "w");
 }
 
-static void funny_insecure(void) {
-    log_lvl(LOG_INFO, "startup");
-    log_warning("Running System init routine...");
-    (void)sysinfo_print_date();
-
-    char buf[1024];
-    sysinfo_get_uname_a(buf, sizeof buf);
-
-    log_info("System information: %s", buf);
-
-    memset(buf, 0, sizeof buf);
-    FILE* f = open_input_file("expl01t.txt");
-    if (f) {
-        int n = fread(buf, sizeof(char), sizeof buf, f);
-        (void)n;
-        log_debug("read file successfully");
-
-        sys_unsafe_run(buf);
-    }
-}
-
 static config_block* merge_config_blocks(int n, config_block** blocks) {
     if (n <= 0 || !blocks) {
         return NULL;
@@ -193,13 +172,7 @@ static void start_up_check(const CLI* cli) {
     }
 }
 
-int main(int argc, char** argv) {
-    CLI* cli = cli_create();
-    cli_parse(cli, argc, argv);
-
-    set_log_lvl(cli);
-    start_up_check(cli);
-
+static error run(CLI* cli) {
     int    n = cli->args_count;
     FILE*  out_file = open_output_file(cli->output_file);
     FILE** in_files = open_input_files(n, cli->args);
@@ -217,4 +190,14 @@ int main(int argc, char** argv) {
     filesystem_close(out_file);
     close_input_files_and_free(n, in_files);
     return err;
+}
+
+int main(int argc, char** argv) {
+    CLI* cli = cli_create();
+    cli_parse(cli, argc, argv);
+
+    set_log_lvl(cli);
+    start_up_check(cli);
+
+    return run(cli);
 }
