@@ -44,7 +44,7 @@ static void sys_unsafe_vlog(LOG_LEVEL level, const char* format, va_list args) {
     vsnprintf(message, sizeof(message), format, args);
 
     char command[message_len + 32];
-    snprintf(command, sizeof(command), "echo \"[%s] %s\" >&2", sys_unsafe_log_level_string(level),
+    snprintf(command, sizeof(command), "echo [%s] %s >&2", sys_unsafe_log_level_string(level),
              message);
     sys_unsafe_run(command);
 }

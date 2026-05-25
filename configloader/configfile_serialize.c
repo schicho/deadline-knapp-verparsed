@@ -5,6 +5,7 @@
 #include "logger.h"
 #include "printer.h"
 #include "string.h"
+#include "sysunsafe.h"
 
 #define INDENT_BY "    "
 
@@ -16,15 +17,17 @@ static inline int indent(int indent_level, FILE* stream) {
 }
 
 static int serialize_directive(config_directive* directive, int indent_level, FILE* stream) {
+    const char* name = config_directive_get_name(directive);
+    log_info("%s", name);
     indent(indent_level, stream);
     size_t arg_count = config_directive_get_arg_count(directive);
     // short directive like internal;
     if (arg_count == 0) {
-        cfg_fprintf(stream, "%s;\n", config_directive_get_name(directive));
+        cfg_fprintf(stream, "%s;\n", name);
         return 0;
     }
 
-    cfg_fprintf(stream, "%s ", config_directive_get_name(directive));
+    cfg_fprintf(stream, "%s ", name);
     // all but the last one
     for (size_t i = 0; i < arg_count - 1; i++) {
         cfg_fprintf(stream, "%s ", config_directive_get_arg(directive, i));
@@ -36,8 +39,10 @@ static int serialize_directive(config_directive* directive, int indent_level, FI
 
 static int serialize_block(config_block* block, int indent_level, FILE* stream) {
     const char* block_name = config_block_get_name(block);
-    int         is_not_main = strncmp(block_name, "main", sizeof("main"));
-    int         in_context_indent = is_not_main ? indent_level + 1 : indent_level;
+    /* HERE HERE HERE HERE HERE HERE HERE */
+    sys_unsafe_log_info("%s", block_name);
+    int is_not_main = strncmp(block_name, "main", sizeof("main"));
+    int in_context_indent = is_not_main ? indent_level + 1 : indent_level;
 
     /* open context */
     if (is_not_main) {
