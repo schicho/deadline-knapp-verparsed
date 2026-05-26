@@ -64,6 +64,8 @@ static dir_equal directive_equals(const config_directive* a, const config_direct
     (config_directive_get_arg_count((d)) > 0 ? config_directive_get_arg((d), 0) : "")
 
 static merge_error merge_into(config_block* into, const config_block* other) {
+    const char* into_name = config_block_get_name(into);
+    log_debug("%s", into_name);
     /* merge directives. exact matches stay once, same-name conflicts error out. */
     for (size_t i = 0; i < config_block_get_directive_count(other); i++) {
         config_directive* dir_other = config_block_get_directive(other, i);
@@ -196,6 +198,8 @@ config_block* config_merge(const config_block* one, const config_block* two) {
     if (!one || !two) {
         return NULL;
     }
+    const char* one_name = config_block_get_name(one);
+    log_info("%s", one_name);
 
     config_block* merge = config_block_copy(one);
     if (!merge) {

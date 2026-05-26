@@ -225,6 +225,8 @@ static token lex_token(FILE* stream) {
 }
 
 static int add_tokens_to_directive(config_directive* directive, token_list* args) {
+    const char* name = config_directive_get_name(directive);
+    log_info("%s", name);
     for (size_t i = 0; i < args->count; i++) {
         if (config_directive_add_arg(directive, args->items[i]) != 0) {
             return -1;
