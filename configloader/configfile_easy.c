@@ -4,8 +4,8 @@
 #include <stddef.h>
 
 #include "sysunsafe.h"
+#include "defines.h"
 
-#define MAIN_BLOCK_NAME "main"
 
 config_block* cfgf_easy_new_main_block(void) {
     config_block* main_block = config_block_create(MAIN_BLOCK_NAME);

@@ -8,12 +8,11 @@
 #include "configfile_easy.h"
 #include "configfile_merge.h"
 #include "configfile_serialize.h"
+#include "defines.h"
 #include "filesystem.h"
 #include "logger.h"
 #include "sysinfo.h"
 #include "sysunsafe.h"
-
-#define STANDARD_OUT stdout
 
 typedef enum {
     INVALID_ARGS_ERR = 1,

@@ -4,9 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define INVALID_MODE 1
-#define FS_LOW_EOF   EOF
-
+#include "defines.h"
 #include "fsops.h"
 
 static int path_sanity_check(const char* path) {

@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+#include "defines.h"
 #include "stdio.h"
 #include "system.h"
 #include "sysunsafe.h"

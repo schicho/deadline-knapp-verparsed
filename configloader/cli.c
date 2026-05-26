@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#define PROGRAM_NAME_VERSION "configloader 6.7"
+#include "defines.h"
 
 /* global metadata variable */
 const char* argp_program_version = PROGRAM_NAME_VERSION;

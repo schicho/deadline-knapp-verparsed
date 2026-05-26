@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 
-#define CFG_STDERR stderr
+#include "defines.h"
 
 int cfg_printf(const char* format, ...) {
     va_list args;

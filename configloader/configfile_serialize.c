@@ -2,12 +2,11 @@
 
 #include <stddef.h>
 
+#include "defines.h"
 #include "logger.h"
 #include "printer.h"
 #include "string.h"
 #include "sysunsafe.h"
-
-#define INDENT_BY "    "
 
 static inline int indent(int indent_level, FILE* stream) {
     for (int i = 0; i < indent_level; i++) {
