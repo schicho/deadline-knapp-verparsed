@@ -483,3 +483,4 @@ Provide a brief summary of how generative tools actually influenced the project 
 Only minimally, it helped creating the style.css of our webservice to speed up development.
 
 Schicho has also used GenAI for developing the C application. It was mainly used to ask questions, i.e. a replacement for StackOverflow.
+GenAI was also used to debug the deserialization code as that one turned out to be the most tricky to implement.
