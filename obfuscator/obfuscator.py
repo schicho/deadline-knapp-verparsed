@@ -179,12 +179,6 @@ def whitespace_remover(a):
     return a
 
 def comment_remover(given_string):
-
-    #This does not take into account if a C++ style comment happens within a string
-    # i.e. "Normal String // With a C++ comment embedded inside"
-    # This is a barebones start for C style block comments
-    # Current issue is it is only single line C style comments
-    # It also finds C style comments in strings
     given_string = re.sub(r"/\*.*?\*/", "", given_string, flags=re.S)
 
     cpp_filtered_code = re.findall(
@@ -260,9 +254,6 @@ def parse_args():
     return parser.parse_args()
 
 def main():
-    """
-    The main function to begin the obfuscation of c code files
-    """
     args = parse_args()
     input_dir = os.path.abspath(args.input_dir)
     output_dir = os.path.abspath(args.output_dir)

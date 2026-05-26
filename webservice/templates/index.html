@@ -9,7 +9,7 @@
 </head>
 
 <body>
-    <main class="card">
+    <main class="card" data-submission-locked="{{ 'true' if submission_locked else 'false' }}">
         <span class="badge">CTF Challenge: Group C</span>
         <h1>Deadline knapp verPARSEd</h1>
         <p> Download the source code, inspect the code to find the vulnerable function and submit the hidden function in
@@ -29,8 +29,8 @@
             <h2>Submit Answer</h2>
             <form action="/submit" method="post">
                 <input type="text" name="answer" placeholder="Enter the vulnerable function name" required {% if solved
-                    %}disabled{% endif %}>
-                <button type="submit" {% if solved %}disabled{% endif %}> Submit</button>
+                    or submission_locked %}disabled{% endif %}>
+                <button type="submit" {% if solved or submission_locked %}disabled{% endif %}> Submit</button>
             </form>
             {% if result %} <div class="result {{ result_type }}"> {{ result }} </div>
             {% endif %}
@@ -45,6 +45,7 @@
         const downloadButton = document.getElementById("download_button");
         let input = document.querySelector('input[name="answer"]');
         let submit_button = document.querySelector('button[type="submit"]');
+        const submissionLocked = document.querySelector(".card").dataset.submissionLocked === "true";
         let remainingSeconds = timer ? Number(timer.dataset.remaining || 0) : 0;
         let countdownHandle = null;
 
@@ -73,7 +74,7 @@
             remainingSeconds = seconds;
             timer.classList.remove("hidden");
             timerValue.innerText = remainingSeconds;
-            disableSubmit(false);
+            disableSubmit(submissionLocked);
         }
 
         function stopTimer() {

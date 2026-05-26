@@ -18,7 +18,7 @@ CHALLENGE_TIME = 60
 flag = "vulnerable_function"
 
 # When set to "1", keep per-run artifacts for debugging instead of deleting them.
-KEEP_RUNS = os.getenv("OBFUSCATOR_KEEP_RUNS", "0") == "1"
+KEEP_RUNS = os.getenv("FLASK_DEBUG", "0") == "1"
 
 def get_time():
     starting_time = session.get("start_time")
@@ -27,6 +27,17 @@ def get_time():
 
     elapsed = time.time() - starting_time
     return max(0, int(CHALLENGE_TIME - elapsed))
+
+
+def is_submission_locked(remaining_time=None):
+    if remaining_time is None:
+        remaining_time = get_time()
+
+    return (
+        session.get("solved", False)
+        or session.get("attempt_used", False)
+        or (remaining_time is not None and remaining_time <= 0)
+    )
 
 
 def build_challenge_name(run_id):
@@ -57,12 +68,14 @@ def cleanup_run_artifacts(run_dir):
 
 @app.route("/")
 def index():
+    remaining_time = get_time()
     return render_template(
         "index.html",
         result=None,
         result_type=None,
-        remaining_time=get_time(),
-        solved=session.get("solved", False)
+        remaining_time=remaining_time,
+        solved=session.get("solved", False),
+        submission_locked=is_submission_locked(remaining_time)
     )
 
 
@@ -102,6 +115,7 @@ def start():
             result_type="error",
             remaining_time=get_time(),
             solved=False,
+            submission_locked=False,
         )
     
     # load the output dict to get the correct answer for the current obfuscation
@@ -115,6 +129,7 @@ def start():
             result_type="error",
             remaining_time=get_time(),
             solved=False,
+            submission_locked=False,
         )
 
     session["answer"] = output_dict.get("flag", flag)
@@ -146,19 +161,21 @@ def submit():
             result="Start a challenge first!",
             result_type="warning",
             remaining_time=None,
-            solved=False
+            solved=False,
+            submission_locked=False
         )
+
+    remaining_time = get_time()
 
     if session.get("solved"):
         return render_template(
             "index.html",
             result="Correct!",
             result_type="success",
-            remaining_time=get_time(),
-            solved=True
+            remaining_time=remaining_time,
+            solved=True,
+            submission_locked=True
         )
-
-    remaining_time = get_time()
 
     if remaining_time <= 0:
         return render_template(
@@ -166,9 +183,21 @@ def submit():
             result="Time is up!",
             result_type="warning",
             remaining_time=0,
-            solved=False
+            solved=False,
+            submission_locked=True
         )
 
+    if session.get("attempt_used", False):
+        return render_template(
+            "index.html",
+            result="This challenge is already locked. Reset to try again.",
+            result_type="warning",
+            remaining_time=remaining_time,
+            solved=False,
+            submission_locked=True
+        )
+
+    session["attempt_used"] = True
     answer = request.form.get("answer", "").strip()
 
     if answer == session.get("answer"):
@@ -176,7 +205,7 @@ def submit():
         message_type = "success"
         session["solved"] = True
     else:
-        message = "Wrong, try again!"
+        message = "Wrong answer. This challenge is now locked until reset."
         message_type = "error"
 
     return render_template(
@@ -184,7 +213,8 @@ def submit():
         result=message,
         result_type=message_type,
         remaining_time=remaining_time,
-        solved=session.get("solved", False)
+        solved=session.get("solved", False),
+        submission_locked=is_submission_locked(remaining_time)
     )
 
 
