@@ -219,6 +219,22 @@ val res13: List[io.shiftleft.codepropertygraph.generated.nodes.Method] = List(
 )
 ```
 
+
+Too solve the challenge quickly a complete query for Joern can be created:
+
+```
+joern> cpg.call("system")
+     |    .method
+     |    .caller
+     |    .caller
+     |    .callIn
+     |    .filter(_.code.contains("%s"))
+     |    .method
+     |    .name
+     |    .l
+val res7: List[String] = List("serialize_block", "cfgf_easy_add_directive")
+```
+
 #### Additional information
 
 The vulnerability can be triggered, when running the program in verbose mode only, given a specially crafted config file as in the following.
@@ -332,6 +348,7 @@ If you want to run this, you can do that again similiarly to the original code:
 cd out/
 make
 ```
+
 
 
 ### Knowledge needed for this challenge
