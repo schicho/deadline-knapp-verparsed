@@ -78,6 +78,8 @@ sink.reachableByFlows(source).p
 
 %TODO rest
 
+%TODO (basti) ich muss das noch überarbeiten
+
 
 ### Knowledge needed for this challenge
 To solve this challenge, the user needs to know how system calls work and what makes them unsafe. They also need to know how to work with joern, this can however be learned rather quickly or the user could be supported by giving hints if they are stuck.
