@@ -197,7 +197,7 @@ val res11: List[io.shiftleft.codepropertygraph.generated.nodes.Call] = List(
 )
 ```
 
-4. Enter the calling functions name `"configfile_serialize"` as flag on the website. Note that of course the files and function names are obfuscated, so the flag is a random string and not "configfile_serialize".
+4. Enter the calling functions name `"serialize_block"` as flag on the website. Note that of course the files and function names are obfuscated, so the flag is a random string and not `"serialize_block"`.
 
 ```
 joern> cpg.call("sys_unsafe_log_info").method.l
@@ -206,14 +206,21 @@ val res13: List[io.shiftleft.codepropertygraph.generated.nodes.Method] = List(
   Method(
     astParentFullName = "configfile_serialize.c:<global>",
     astParentType = "TYPE_DECL",
-    code = """static int serialize_block(config_block* block, int indent_level, FILE* stream) {
-    const char* block_name = config_block_get_name(block);
-    /* HERE HERE HERE HERE HERE HERE HERE */
-    sys_unsafe_log_info("%s", block_name);
-    int is_not_main = strncmp(block_name, "main", sizeof("main"));
-    int in_context_indent = is_not_main ? indent_level + 1 : indent_level;
-
-   [...]
+    code = [...],
+    columnNumber = Some(value = 1),
+    columnNumberEnd = Some(value = 1),
+    filename = "configfile_serialize.c",
+    fullName = "serialize_block",                     <------------------
+    genericSignature = "<empty>",
+    hash = None,
+    isExternal = false,
+    lineNumber = Some(value = 40),
+    lineNumberEnd = Some(value = 79),
+    name = "serialize_block",
+    offset = None,
+    offsetEnd = None,
+    order = 1,
+    signature = "int(config_block*,int,FILE*)"
   ),
   [...]
 )
