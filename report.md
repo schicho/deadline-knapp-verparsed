@@ -263,6 +263,76 @@ configfile_deserialize.c  configfile_merge.c        expl01t.txt             fsop
 ```
 
 
+### Starting the webservice
+The webservice is running in a Docker container and can be started with docker compose. This command is the only one which is needed to run this challenge, all others are completely optional and for further exploration.
+In project root run::
+```bash
+docker compose up
+```
+
+You can then reach the website under http://127.0.0.1:5000 or http://172.18.0.2:5000.
+If these links do not work, check out the docker output for the correct link.
+
+This runs the server in dev mode; to run it in production mode (using `waitress`), run
+```bash
+SERVER_MODE=production docker compose up --build 
+```
+
+#### Debugging
+If you want to debug the webservice locally, you can do so by simply running the `app.py`.
+
+First install the venv:
+```bash
+# from project root
+cd webservice/
+python3 -m venv ./venv
+source ./venv/bin/activate
+pip install -r ./requirements.txt
+```
+
+Then run the webservice:
+```bash
+python3 webservice.py
+```
+
+By default, the webservice clears the obfuscated files from memory after the initial request finished and only keeps the flag to the obfuscated code. If you want to keep the obfuscated code for further obfuscation, run
+```bash
+export FLASK_DEBUG=1
+python3 webapp.py
+```  
+
+Note that the obfuscated code can also be inspected by running the obfuscator on their own (see next chapter).
+
+### Runnig the config loader
+Running the configloader code is not necessary to solve the challenge.
+However if you want to do so, you can by first compiling the application with the included MAKE file:
+```bash
+cd ./configloader
+make
+```
+
+If you want to run and inspect the obfuscated code, you can do so by first running the obfuscator.
+First install the Python venv:
+```bash
+# from project root
+cd obfuscator/
+python3 -m venv ./venv
+source ./venv/bin/activate
+pip install -r ./requirements.txt
+```
+
+Then run the obfuscator:
+```bash
+python3 obfuscator.py
+```
+
+You can then inspect the output in `obfuscator/out`.
+If you want to run this, you can do that again similiarly to the original code:
+```bash
+cd out/
+make
+```
+
 
 ### Knowledge needed for this challenge
 To solve this challenge, the user needs to know how system calls work and what makes them unsafe. They also need to know how to work with joern, this can however be learned rather quickly or the user could be supported by giving hints if they are stuck.

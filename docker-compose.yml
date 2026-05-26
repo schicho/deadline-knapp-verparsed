@@ -1,0 +1,17 @@
+services:
+  webservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      FLASK_DEBUG: "0"
+      SERVER_MODE: ${SERVER_MODE:-development}
+    command: >
+      sh -c 'if [ "$$SERVER_MODE" = "production" ]; then
+      waitress-serve --host=0.0.0.0 --port=5000 webservice.app:app;
+      else
+      python webservice/app.py;
+      fi'
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
