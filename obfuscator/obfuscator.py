@@ -1,9 +1,4 @@
-"""
-obfuscator
-Description: A basic python script to aid in the obfuscation of c and c++ source code files
-Authors: Sam "Alice" Blair, Winston Howard, Chance Sweetser
-Created Date: 05/04/20
-"""
+
 import os
 import re
 import random
@@ -16,23 +11,16 @@ import json
 DEFAULT_INPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "configloader"))
 DEFAULT_OUTPUT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "out"))
 
-FLAG = "sys_unsafe_run"
-FLAG_FILE = "sysunsafe.c"
+FLAG = "serialize_block"
+FLAG_FILE = "configfile_serialize.c"
 OUTPUT_DICT = {}
 
 
 def variable_renamer(given_string):
-    """
-    Function to rename all variables and fuctions. 
-    given_string is a string of C/C++ code
-    """
     return variable_renamer_with_dictionary(given_string, None)
 
 
 def build_variable_dictionary(given_string, variable_dictionary):
-    """
-    Collect rename candidates from a string and extend the supplied dictionary.
-    """
     special_cases = {
         "typedef", "unsigned", "const", "struct", "enum", "union",
         "bool", "void", "char", "int", "size_t", "FILE"
@@ -90,10 +78,6 @@ def build_variable_dictionary(given_string, variable_dictionary):
 
 
 def build_macro_dictionary(given_string, variable_dictionary):
-    """
-    Collect macro names from #define directives and extend the supplied dictionary.
-    Reserved implementation identifiers are skipped.
-    """
     for line in given_string.splitlines():
         define_match = re.match(r"^\s*#define\s+([A-Za-z_][A-Za-z0-9_]*)\b", line)
         if not define_match:
@@ -110,10 +94,6 @@ def build_macro_dictionary(given_string, variable_dictionary):
 
 
 def variable_renamer_with_dictionary(given_string, variable_dictionary):
-    """
-    Rename variables and functions using a supplied dictionary or build a new one.
-    given_string is a string of C/C++ code
-    """
 
     # Variable declarations:
     if variable_dictionary is None:
@@ -163,19 +143,12 @@ def variable_renamer_with_dictionary(given_string, variable_dictionary):
 
 
 def random_string(stringLength=8):
-    """
-    Function to generate a random string.
-    Can pass it an integer string length to make it that size else it will be 8
-    """
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(stringLength))
 
 
 
 def whitespace_remover(a):
-    """
-    Function to remove all whitespace, except for after functions, variables, and imports
-    """
     splits = re.split('\"',a)
     code_string = r"((\w+\s+)[a-zA-Z_*][|a-zA-Z0-9_]*|#.*|return [a-zA-Z0-9_]*|\[\.\]|else)"
     index = 0
@@ -206,10 +179,6 @@ def whitespace_remover(a):
     return a
 
 def comment_remover(given_string):
-    """
-    Function to (currently) remove C++ style comments 
-    given_string is a string of C/C++ code
-    """
 
     #This does not take into account if a C++ style comment happens within a string
     # i.e. "Normal String // With a C++ comment embedded inside"
@@ -227,9 +196,6 @@ def comment_remover(given_string):
 
 
 def rewrite_local_includes(given_string, filename_map):
-    """
-    Rewrite quoted local includes to the obfuscated output names.
-    """
     def replace_include(match):
         include_name = match.group(2)
         return match.group(1) + filename_map.get(include_name, include_name) + match.group(3)
@@ -237,10 +203,7 @@ def rewrite_local_includes(given_string, filename_map):
     return re.sub(r'(?m)^([ \t]*#include\s+")([^"]+)(")', replace_include, given_string)
 
 
-def build_output_name_map(source_files):
-    """
-    Build randomized output names while keeping .c/.h pairs on the same base name.
-    """
+def build_file_name_map(source_files):
     stem_map = {}
     output_name_map = {}
 
@@ -254,18 +217,12 @@ def build_output_name_map(source_files):
 
 
 def write_output_dict(output_dict, output_dir):
-    """
-    Persist the obfuscation metadata for the webservice.
-    """
     output_dict_path = os.path.join(output_dir, "output_dict.json")
     with open(output_dict_path, "w", encoding="utf-8") as file_data:
         json.dump(output_dict, file_data, indent=2, sort_keys=True)
 
 
 def clear_output_directory(output_dir):
-    """
-    Remove all files and folders from the output directory.
-    """
     if not os.path.exists(output_dir):
         return
 
@@ -281,18 +238,12 @@ def clear_output_directory(output_dir):
 
 
 def copy_makefile_if_present(input_dir, output_dir):
-    """
-    Copy Makefile from input directory into output directory when available.
-    """
     source_makefile = os.path.join(input_dir, "Makefile")
     if os.path.isfile(source_makefile):
         shutil.copy2(source_makefile, os.path.join(output_dir, "Makefile"))
 
 
 def parse_args():
-    """
-    Parse command line arguments for source and output directories.
-    """
     parser = argparse.ArgumentParser(description="Obfuscate C/C++ source and header files.")
     parser.add_argument(
         "-i",
@@ -327,7 +278,7 @@ def main():
 
     print("Log: ")
     source_files = sorted([filename for filename in os.listdir(input_dir) if filename.endswith((".c", ".h"))])
-    obfuscated_names = build_output_name_map(source_files)
+    obfuscated_names = build_file_name_map(source_files)
 
     file_contents = {}
     for filename in source_files:
@@ -357,8 +308,6 @@ def main():
             output_path = os.path.join(output_dir, obfuscated_names[filename])
             with open(output_path, "w+") as f:
                 f.write(file_string)
-            print(file_string)
-
         else:
             print("FAIL")
 

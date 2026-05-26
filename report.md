@@ -41,7 +41,7 @@ For Both:
 ```
 ### Architecture
 Our code is split into three main components which also resemble the main contents of our challenge:
-Firstly the configloader contains the actual unobfuscated code of the nginx config loader. This code can be run and contains a vulnerability which enables to run arbitrary system calls.
+Firstly the configloader contains the actual unobfuscated code of the nginx configloader. This code can be run and contains a vulnerability which enables to run arbitrary system calls.
 
 Secondly, the obfuscator obfuscates the configloader code, i.e. file, function and variables names, and macros and puts them into a seperate subfolder. We paid attention that the output produced by the obfuscator can still be compiled so the students could actually run the program by themselves and play around with it.
 The obfuscator does rather simple obfuscation since we do not want to make the obfuscation and thus the challenge too hard. Further, most open source obfuscators are working on a compiler level than on a C level, this however would complicate the challenge even more.
@@ -326,7 +326,7 @@ python3 webapp.py
 
 Note that the obfuscated code can also be inspected by running the obfuscator on their own (see next chapter).
 
-### Runnig the config loader
+### Runnig the configloader
 Running the configloader code is not necessary to solve the challenge.
 However if you want to do so, you can by first compiling the application with the included MAKE file:
 ```bash
