@@ -197,7 +197,7 @@ val res11: List[io.shiftleft.codepropertygraph.generated.nodes.Call] = List(
 )
 ```
 
-4. Enter the calling functions name `"serialize_block"` as flag on the website. Note that of course the files and function names are obfuscated, so the flag is a random string and not `"serialize_block"`.
+4. Enter the obfusctaed calling functions name representing `"serialize_block"` as flag on the website. Note that of course the files and function names are obfuscated, so the flag is a random string and not `"serialize_block"`.
 
 ```
 joern> cpg.call("sys_unsafe_log_info").method.l
@@ -227,24 +227,24 @@ val res13: List[io.shiftleft.codepropertygraph.generated.nodes.Method] = List(
 ```
 
 
-Too solve the challenge quickly a complete query for Joern can be created:
+To solve the challenge quickly a complete query for Joern can be created:
 
 ```
 joern> cpg.call("system")
-     |    .method
-     |    .caller
-     |    .caller
-     |    .callIn
-     |    .filter(_.code.contains("%s"))
-     |    .method
-     |    .name
-     |    .l
+        .method
+        .caller 
+        .caller
+        .callIn
+        .filter(_.code.contains("%s"))
+        .method
+        .name
+        .l
 val res7: List[String] = List("serialize_block", "cfgf_easy_add_directive")
 ```
 
 #### Additional information
 
-The vulnerability can be triggered, when running the program in verbose mode only, given a specially crafted config file as in the following.
+The vulnerability can be triggered when running the program in verbose mode only, given a specially crafted config file as in the following.
 
 A block needs to be named a quoted shell command, which ends the intended `system()` call with a semicolon:
 
@@ -455,9 +455,9 @@ We decided to then change the solution path to traverse in reverse order from a 
 There were many things to consider to make the code resistant against simple code search.
 Obfuscating file and variable names was a first step.
 Additionally, we have put similar looking logging statements into the code. Some of them are vulnerable, but dead code,
-others are safe log functions, and others are only printing from buffers the user cannot control.
+Others are safe log functions, and others are only printing from buffers the user cannot control.
 File size is also varying across the files, so we checked for similar sized files such that the vulnerable C file can't be easily
-identified just by checking the file sizes.
+identified just by checking them.
 
 We believe that a convoluted regex/grep code search across the files is still possible.
 We have done our best to mitigate some of the easiest code search approaches.
