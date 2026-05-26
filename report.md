@@ -18,8 +18,13 @@ Somewhere hidden layers deep in this configuration loader, through a specially c
 
 The challenge is that the C code is obfuscated randomly per download and the flag needs to be entered within 60 seconds in the web service. Thus, manual search through the code is not possible.
 
-This vulnerability is relevant since some misconfigurations of servers are not instantly visible, but often hidden in layers after layers of a software model.
-This problem is getting more severe with AI Agents producing code which looks fine but contains attack vectors which are not easily deteced on first sight. %TODO: add what users are learning by solving the challenge?
+Our vulnerability is an (ordered on Temu) hommage to the Log4Shell vulnerability, which insecurely trusts user input without proper sanitization in a logging call, which allows arbitrary code execution.
+
+Our vulnerability is relevant as improper input sanitization is a story that keeps on giving.
+This problem is getting more severe with AI Agents producing code which looks fine but contains attack vectors which are not easily deteced on first sight.
+
+By solving this challenge users get familiar with the tool Joern,
+which allows code analyzation using code property graphs. They learn how to use the tool and how to search and detect flows in programs.
 
 ## Core Work
 
