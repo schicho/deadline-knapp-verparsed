@@ -365,8 +365,8 @@ To solve this challenge, the user needs to know how system calls work and what m
 
 #### Joern Flows
 
-It would have been really nice to trace a flow in Joern from opening a file to calling `system()` with it's input.
-Unfortunately, Joern looses track of a flow if some code is "too complicated". In our case it happened in the parsing code.
+It would have been really nice to trace a flow in Joern from opening a file to calling `system()` with its input.
+Unfortunately, Joern loses track of a flow if some code is "too complicated". In our case it happened in the parsing code.
 The flow was tracked from file loading, opening a stream, passing it thorugh various functions, until a `fgetc()`. However, as soon
 as the char was written into a buffer, the flow ended.
 
@@ -469,10 +469,13 @@ We have done our best to mitigate some of the easiest code search approaches.
 What are the limitations of your current implementation?
 If a future student were to pick up this project, what is the logical "next step"?
 ```
+With this project we demonstrated how intentionally vulnerable software can be designed to resemble a realistic application while still containing exploitable code. By combining parser complexity, indirect data flow and obfuscation techniques we were able to manipulate the overall difficulty of the challenge to make vulnerability discovery more difficult through static analysis alone. The project also provides a learning opportunity for both manual and automated code analysis using tools such as Joern. After deciding on the overall project idea, one of the main challenges during development was determining an appropriate difficulty level and implementing it in a way that remained realistic and solvable.
 
-Logical next steps would be to add new vulnerabilities, where then one is randomly picked and add to the code.
+One limitation of the current implementation is that the project focuses on a single vulnerability within a relatively small codebase. Although the parser structure and data flow increase the analysis difficulty the vulnerable execution path can still be discovered by performing a thorough manual code inspection. Another limitation is that the current obfuscation approach remains relatively static and could be expanded further through more advanced techniques such as dynamically generated code paths, randomized parser behavior or automatically injected vulnerabilities.
 
-Overall this project is a nice and interesting way to learn about the use of joern, the obfuscation of code and hidden configuration errors which should be considered and tested thorougly when pushing software to production.
+Considering future work the project could serve as a starting point for developing more advanced challenges with adjustable difficulty levels. One possible expansion would be to support multiple vulnerability classes simultaneously, potentially even with dynamically selected or generated vulnerabilities. These vulnerabilities could also interact with one another and build upon each other rather than a single exploit path. Additionally, the obfuscation techniques could be expanded further by restructuring the control and data flow or introducing dynamically changing execution paths. If vulnerabilities or code structures were obfuscated dynamically, it would also be useful to implement an automated validation system to ensure that the vulnerabilities remain both detectable and solvable after the changes are applied.
+
+Overall this project is a nice and interesting way to learn about the use of joern, the obfuscation of code and hidden configuration errors which should be considered and tested thoroughly when pushing software to production. The project also provides a good foundation for different learning possibilities inlcuding different difficulty levels. 
 
 ## Generative AI (If Applicable)
 
